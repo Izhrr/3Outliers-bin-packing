@@ -1,0 +1,74 @@
+{
+  "timestamp": "2025-10-21T08:46:13.358219",
+  "metadata": {
+    "input_file": "../data/input/sample_small.json",
+    "capacity": 100,
+    "num_items": 7
+  },
+  "results": [
+    {
+      "algorithm": "Steepest Ascent Hill Climbing",
+      "execution": {
+        "duration_seconds": 0.001872699999694305,
+        "duration_ms": 1.872699999694305,
+        "iterations": 2
+      },
+      "objective_function": {
+        "initial": 427.025,
+        "final": 423.625,
+        "improvement": 3.3999999999999773,
+        "improvement_percent": 0.7962063111059018
+      },
+      "solution": {
+        "is_valid": true,
+        "num_containers_initial": 4,
+        "num_containers_final": 4,
+        "containers": {
+          "num_containers": 4,
+          "containers": [
+            {
+              "id": 1,
+              "items": [
+                "BRG004"
+              ],
+              "load": 60,
+              "capacity": 100
+            },
+            {
+              "id": 2,
+              "items": [
+                "BRG006",
+                "BRG001"
+              ],
+              "load": 85,
+              "capacity": 100
+            },
+            {
+              "id": 3,
+              "items": [
+                "BRG007",
+                "BRG005"
+              ],
+              "load": 80,
+              "capacity": 100
+            },
+            {
+              "id": 4,
+              "items": [
+                "BRG003",
+                "BRG002"
+              ],
+              "load": 80,
+              "capacity": 100
+            }
+          ]
+        }
+      },
+      "history": [
+        427.025,
+        424.225,
+        423.625
+      ]
+    }
+  ]
+}
