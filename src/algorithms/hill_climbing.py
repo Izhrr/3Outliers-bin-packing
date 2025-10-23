@@ -268,9 +268,9 @@ class SidewaysMoveHillClimbing(HillClimbingBase):
 # Demo
 def demo_hill_climbing():
     """Demo penggunaan Hill Climbing variants"""
-    from core.state import State
-    from core.objective_function import ObjectiveFunction
-    from core.initializer import BinPackingInitializer
+    from src.core.state import State
+    from src.core.objective_function import ObjectiveFunction
+    from src.core.initializer import BinPackingInitializer
     
     # Setup problem
     items = {
