@@ -65,21 +65,42 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
     def crossover(self, parents):
         parent_1 = parents[0]
         parent_2 = parents[1]
-        if len(parent_1.containers) > len(parent_2.containers):
-            size = len(parent_2.containers)
-        else:
-            size = len(parent_1.containers)
-        if size < 2:
-            return [parent_1.copy(), parent_2.copy()]
-        
-        random_cut = random.randint(1, size-1)
+        # Step 1: Gabungkan semua item dari kedua parent
+        items_in_p1 = [item for container in parent_1.containers for item in container]
+        items_in_p2 = [item for container in parent_2.containers for item in container]
+        combined_items = list(dict.fromkeys(items_in_p1 + items_in_p2))  # urut, unik
 
-        containers_1 = parent_1.containers[:random_cut] + parent_2.containers[random_cut:]
-        containers_2 = parent_2.containers[:random_cut] + parent_1.containers[random_cut:]
+        items_1 = combined_items[:]
+        random.shuffle(items_1)
+        containers_1 = []
+        for item in items_1:
+            placed = False
+            for container in containers_1:
+                current_load = sum(self.items[i] for i in container)
+                if current_load + self.items[item] <= self.capacity:
+                    container.append(item)
+                    placed = True
+                    break
+            if not placed:
+                containers_1.append([item])
         child_1 = State(self.items, self.capacity, containers_1)
+        
+        items_2 = combined_items[:]
+        random.shuffle(items_2)
+        containers_2 = []
+        for item in items_2:
+            placed = False
+            for container in containers_2:
+                current_load = sum(self.items[i] for i in container)
+                if current_load + self.items[item] <= self.capacity:
+                    container.append(item)
+                    placed = True
+                    break
+            if not placed:
+                containers_2.append([item])
         child_2 = State(self.items, self.capacity, containers_2)
 
-        return [child_1.copy(), child_2.copy()]
+        return [child_1, child_2]
         
     def mutation(self, child):
         new_state = child.copy()
@@ -172,6 +193,7 @@ def run_genetic_demo():
     )
     best_state, exec_time = ga.solve()
 
+    print(f"Initial State:\n{initial_state}")
     print("\nHASIL AKHIR GENETIC ALGORITHM")
     print("-"*60)
     print(f"Best State (container configuration):\n{best_state}")
