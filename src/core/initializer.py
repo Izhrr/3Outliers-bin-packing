@@ -13,7 +13,7 @@ Semua metode support sorting items (biasanya descending untuk hasil lebih baik)
 
 from typing import Dict, List, Optional
 import random
-from src.core.state import State
+from core.state import State
 
 class BinPackingInitializer:
     """

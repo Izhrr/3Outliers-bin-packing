@@ -1,14 +1,14 @@
 import random
 import time
 from typing import Optional
-from src.algorithms.base_algorithm import BaseLocalSearchAlgorithm
-from src.core.state import State
-from src.core.objective_function import ObjectiveFunction
-from src.core.initializer import BinPackingInitializer
+from algorithms.base_algorithm import BaseLocalSearchAlgorithm
+from core.state import State
+from core.objective_function import ObjectiveFunction
+from core.initializer import BinPackingInitializer
 
 
 class GeneticAlgorithm(BaseLocalSearchAlgorithm):
-    def __init__(self, initial_state, objective_function, items, capacity, mutation_probability=0.5, population_size=50, max_iterations=1000,):
+    def __init__(self, initial_state, objective_function, items, capacity, mutation_probability=0.5, population_size=50, max_iterations=1000):
         super().__init__(initial_state, objective_function)
         self.items = items
         self.capacity = capacity
@@ -20,8 +20,21 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
     def get_name(self):
         return "Genetic"
 
+
+    def get_result_dict(self):
+        stats = super().get_statistics()
+        result = super().get_result_dict()
+        result['genetic_params'] = {
+            "population_size": self.population_size,
+            "mutation_probability": self.mutation_probability,
+            "max_iterations": self.max_iterations,
+        }
+        result["final_state"] = self.best_state
+        return result
+
     def initialize_population(self):
-        for i in range(self.population_size):
+        self.population.append(self.initial_state)
+        for i in range(self.population_size-1):
             initial_state_choice = random.randint(1,6)
             if initial_state_choice == 1:
                 state = BinPackingInitializer.best_fit(self.items, self.capacity)
@@ -162,45 +175,53 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
 
             self.population = children
             children_fitness = self.fitness_function()
-
             fitness_list = children_fitness
+
+            # History dan iterasi
+            best_fitness = min(fitness_list)
+            self.history.append(best_fitness)
+            self.iteration_count += 1
+
         end_time = time.perf_counter()
-        return self.get_best_solution(), end_time - start_time
+        self.best_state = self.get_best_solution()
+        self.best_value = self.objective_function.calculate(self.best_state)
+        self.duration = end_time - start_time
+        return self.best_state, self.duration
     
-def run_genetic_demo():
-    # Setup problem
-    items = {
-        "BRG001": 40, "BRG002": 55, "BRG003": 25,
-        "BRG004": 60, "BRG005": 30, "BRG006": 45, "BRG007": 50
-    }
-    capacity = 100
+# def run_genetic_demo():
+#     # Setup problem
+#     items = {
+#         "BRG001": 40, "BRG002": 55, "BRG003": 25,
+#         "BRG004": 60, "BRG005": 30, "BRG006": 45, "BRG007": 50
+#     }
+#     capacity = 100
 
-    # Initial state bisa dipilih bebas (tidak akan digunakan langsung oleh Genetic, hanya untuk base)
-    initial_state = BinPackingInitializer.best_fit(items, capacity)
-    obj_func = ObjectiveFunction()
+#     # Initial state bisa dipilih bebas (tidak akan digunakan langsung oleh Genetic, hanya untuk base)
+#     initial_state = BinPackingInitializer.best_fit(items, capacity)
+#     obj_func = ObjectiveFunction()
     
-    print("="*60)
-    print("DEMO GENETIC ALGORITHM")
-    print("="*60)
-    ga = GeneticAlgorithm(
-        initial_state=initial_state,
-        objective_function=obj_func,
-        items=items,
-        capacity=capacity,
-        mutation_probability=0.2,
-        population_size=30,
-        max_iterations=100
-    )
-    best_state, exec_time = ga.solve()
+#     print("="*60)
+#     print("DEMO GENETIC ALGORITHM")
+#     print("="*60)
+#     ga = GeneticAlgorithm(
+#         initial_state=initial_state,
+#         objective_function=obj_func,
+#         items=items,
+#         capacity=capacity,
+#         mutation_probability=0.2,
+#         population_size=30,
+#         max_iterations=100
+#     )
+#     best_state, exec_time = ga.solve()
 
-    print(f"Initial State:\n{initial_state}")
-    print("\nHASIL AKHIR GENETIC ALGORITHM")
-    print("-"*60)
-    print(f"Best State (container configuration):\n{best_state}")
-    print(f"Objective value: {obj_func.calculate(best_state)}")
-    print(f"Execution time: {exec_time:.4f} seconds")
-    # Tambahkan statistik lain jika ada
-    # Contoh: jumlah container, sisa kapasitas, dsb
+#     print(f"Initial State:\n{initial_state}")
+#     print("\nHASIL AKHIR GENETIC ALGORITHM")
+#     print("-"*60)
+#     print(f"Best State (container configuration):\n{best_state}")
+#     print(f"Objective value: {obj_func.calculate(best_state)}")
+#     print(f"Execution time: {exec_time:.4f} seconds")
+#     # Tambahkan statistik lain jika ada
+#     # Contoh: jumlah container, sisa kapasitas, dsb
 
-if __name__ == "__main__":
-    run_genetic_demo()
+# if __name__ == "__main__":
+#     run_genetic_demo()

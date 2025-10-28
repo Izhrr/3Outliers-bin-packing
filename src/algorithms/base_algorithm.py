@@ -152,7 +152,8 @@ class BaseLocalSearchAlgorithm(ABC):
                 "num_containers_final": stats['num_containers_final'],
                 "containers": self.best_state.to_dict()
             },
-            "history": stats['history']
+            "history": stats['history'],
+            "final_state": self.best_state
         }
 
 
