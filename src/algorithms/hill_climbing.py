@@ -78,7 +78,10 @@ class SteepestAscentHillClimbing(HillClimbingBase):
             
             # Record history
             self.record_iteration(current_value)
-        
+        else:
+            # Jika loop selesai tanpa break (tidak stuck, tapi habis iterasi)
+            self.stuck_iteration = self.max_iterations
+
         self.duration = time.perf_counter() - start_time
         return self.best_state
     
@@ -155,7 +158,10 @@ class StochasticHillClimbing(HillClimbingBase):
             
             # Record history
             self.record_iteration(current_value)
-        
+        else:
+            # Jika loop selesai tanpa break (tidak stuck, tapi habis iterasi)
+            self.stuck_iteration = self.max_iterations
+
         self.duration = time.perf_counter() - start_time
         return self.best_state
     
