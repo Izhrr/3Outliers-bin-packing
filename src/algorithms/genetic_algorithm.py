@@ -35,19 +35,32 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
     def initialize_population(self):
         self.population.append(self.initial_state)
         for i in range(self.population_size-1):
-            initial_state_choice = random.randint(1,6)
+            initial_state_choice = random.randint(1,2)
             if initial_state_choice == 1:
                 state = BinPackingInitializer.best_fit(self.items, self.capacity)
+            # elif initial_state_choice == 2:
+            #     state = BinPackingInitializer.first_fit(self.items, self.capacity)
+            # elif initial_state_choice == 3:
+            #     state = BinPackingInitializer.worst_fit(self.items, self.capacity)
+            # elif initial_state_choice == 4:
+            #     state = BinPackingInitializer.next_fit(self.items, self.capacity)
+            # elif initial_state_choice == 5:
+            #     state = BinPackingInitializer.random_fit(self.items, self.capacity, seed=i)
             elif initial_state_choice == 2:
-                state = BinPackingInitializer.first_fit(self.items, self.capacity)
-            elif initial_state_choice == 3:
-                state = BinPackingInitializer.worst_fit(self.items, self.capacity)
-            elif initial_state_choice == 4:
-                state = BinPackingInitializer.next_fit(self.items, self.capacity)
-            elif initial_state_choice == 5:
-                state = BinPackingInitializer.random_fit(self.items, self.capacity, seed=i)
-            elif initial_state_choice == 6:
                 state = BinPackingInitializer.greedy_fit(self.items, self.capacity)
+
+            # if initial_state_choice == 1:
+            #     state = BinPackingInitializer.best_fit(self.items, self.capacity)
+            # elif initial_state_choice == 2:
+            #     state = BinPackingInitializer.first_fit(self.items, self.capacity)
+            # elif initial_state_choice == 3:
+            #     state = BinPackingInitializer.worst_fit(self.items, self.capacity)
+            # elif initial_state_choice == 4:
+            #     state = BinPackingInitializer.next_fit(self.items, self.capacity)
+            # elif initial_state_choice == 5:
+            #     state = BinPackingInitializer.random_fit(self.items, self.capacity, seed=i)
+            # elif initial_state_choice == 6:
+            #     state = BinPackingInitializer.greedy_fit(self.items, self.capacity)
 
             self.population.append(state)
 
@@ -120,38 +133,63 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
         containers = new_state.containers
 
         if random.random() < self.mutation_probability:
-            choice = random.randint(1,2)
-            random_index = random.randint(0,len(containers)-1)
             if len(containers) < 2:
                 return new_state
-            random_index = random.randint(0,len(containers)-1)
+            
+            random_index = random.randint(0, len(containers) - 1)
             if len(containers[random_index]) == 0:
                 return new_state
 
-            choice = random.randint(1,3)
+            choice = random.randint(1, 2)
 
             if choice == 1:
-                move = random.randint(0,len(containers[random_index])-1)
-                random_container = random.randint(0,len(containers)-1)
-                while random_container == random_index:
-                    random_container = random.randint(0,len(containers)-1)
+                # Pindahkan 1 item ke container lain yang cukup kapasitasnya
+                move = random.randint(0, len(containers[random_index]) - 1)
                 selected_item = containers[random_index][move]
+                item_weight = self.items[selected_item]
+
+                # Cari semua container yang cukup kapasitasnya (kecuali asal)
+                valid_targets = []
+                for i, c in enumerate(containers):
+                    if i == random_index:
+                        continue
+                    current_load = sum(self.items[it] for it in c)
+                    if current_load + item_weight <= self.capacity:
+                        valid_targets.append(i)
+
+                # Jika ada container yang cukup, pilih salah satu
+                if valid_targets:
+                    random_container = random.choice(valid_targets)
+                else:
+                    # Kalau tidak ada yang cukup, buat container baru
+                    containers.append([])
+                    random_container = len(containers) - 1
+
+                # Pindah item
                 containers[random_index].remove(selected_item)
                 containers[random_container].append(selected_item)
 
             elif choice == 2:
+                # Bongkar seluruh container dan tempatkan item ke container valid
                 saved_container = containers[random_index][:]
                 del containers[random_index]
                 for item in saved_container:
-                    move = random.randint(0,len(containers)-1)
+                    item_weight = self.items[item]
+                    # Cari container yang cukup kapasitasnya
+                    valid_targets = []
+                    for i, c in enumerate(containers):
+                        current_load = sum(self.items[it] for it in c)
+                        if current_load + item_weight <= self.capacity:
+                            valid_targets.append(i)
+                    if valid_targets:
+                        move = random.choice(valid_targets)
+                    else:
+                        # Kalau tidak ada yang cukup, buat container baru
+                        containers.append([])
+                        move = len(containers) - 1
                     containers[move].append(item)
 
-            elif choice == 3:
-                move = random.randint(0, len(containers[random_index])-1)
-                selected_item = containers[random_index][move]
-                containers[random_index].remove(selected_item)
-                containers.append([selected_item])
-
+            # Bersihkan container kosong
             containers = [c for c in containers if len(c) > 0]
             new_state = State(self.items, self.capacity, containers)
         return new_state
@@ -177,7 +215,6 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
             children_fitness = self.fitness_function()
             fitness_list = children_fitness
 
-            # History dan iterasi
             best_fitness = min(fitness_list)
             self.history.append(best_fitness)
             self.iteration_count += 1
@@ -186,6 +223,12 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
         self.best_state = self.get_best_solution()
         self.best_value = self.objective_function.calculate(self.best_state)
         self.duration = end_time - start_time
+
+        initial_value = self.objective_function.calculate(self.initial_state)
+        if self.best_value > initial_value:
+            self.best_state = self.initial_state
+            self.best_value = initial_value
+
         return self.best_state, self.duration
     
 # def run_genetic_demo():
