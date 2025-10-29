@@ -218,9 +218,15 @@ class SidewaysMoveHillClimbing(HillClimbingBase):
                 neighbor_value = self.evaluate_state(neighbor_state)
                 
                 # Ambil yang terkecil (minimisasi)
-                if neighbor_value < best_neighbor_value:
+                if neighbor_value <= best_neighbor_value:
                     best_neighbor = neighbor_state
                     best_neighbor_value = neighbor_value
+            
+             # Jika tidak ada neighbor yang sama atau lebih baik
+            if best_neighbor is None:
+                self.stuck_iteration = iteration
+                self.stuck_reason = "local_optimum"
+                break
             
             # Cek apakah ada improvement
             if best_neighbor_value < current_value:
