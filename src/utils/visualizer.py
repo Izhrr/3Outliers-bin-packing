@@ -301,6 +301,40 @@ class ResultVisualizer:
         print(f"\n✓ Report generated successfully!")
         print(f"  Plots saved to: {output_dir}/")
 
+    @staticmethod
+    def plot_genetic_progression(generations_data: List[Dict], 
+                                title: str = "Genetic Algorithm Progression",
+                                save_path: str = None):
+        import matplotlib.pyplot as plt
+
+        generations = [d['generation'] for d in generations_data]
+        best_fitness = [d['best_fitness'] for d in generations_data]
+        avg_fitness = [d.get('avg_fitness', None) for d in generations_data]
+
+        plt.figure(figsize=(12, 6))
+        plt.plot(generations, best_fitness, label='Best Fitness', color='blue', linewidth=2)
+        if any(f is not None for f in avg_fitness):
+            plt.plot(generations, avg_fitness, label='Average Fitness', color='orange', linestyle='--', linewidth=2)
+
+        plt.xlabel('Banyaknya Terasi (Generasi)', fontsize=12)
+        plt.ylabel('Objective Function (Fitness)', fontsize=12)
+        plt.title(title, fontsize=14, fontweight='bold')
+        plt.legend(fontsize=10)
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+
+        # Tambahkan info best di pojok kanan bawah luar grafik
+        min_best = min(best_fitness)
+        min_gen = generations[best_fitness.index(min_best)]
+        plt.figtext(0.99, 0.01, f"Best Obj Function: {min_best:.2f} @Gen-{min_gen}",
+                    ha='right', va='bottom', fontsize=12, color='blue', 
+                    bbox=dict(facecolor='white', alpha=0.85, edgecolor='blue', boxstyle='round,pad=0.3'))
+
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            print(f"Plot saved to: {save_path}")
+
+        plt.show()
 
 # Demo
 def demo_visualizer():

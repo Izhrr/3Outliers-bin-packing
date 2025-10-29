@@ -24,46 +24,22 @@ from algorithms.hill_climbing import (
     StochasticHillClimbing,
     SidewaysMoveHillClimbing
 )
+from algorithms.genetic_algorithm import GeneticAlgorithm
 from utils.file_handler import FileHandler
 from utils.visualizer import ResultVisualizer
 from utils.timer import Timer
 
 
 def run_single_algorithm(algo_class, initial_state, obj_func, **kwargs):
-    """
-    Helper function untuk menjalankan satu algoritma.
-    
-    Args:
-        algo_class: Class dari algoritma (e.g., SteepestAscentHillClimbing)
-        initial_state: State awal
-        obj_func: ObjectiveFunction instance
-        **kwargs: Parameter tambahan untuk algoritma
-    
-    Returns:
-        Dict: Result dictionary
-    """
     print(f"\nRunning {algo_class.__name__}...")
-    
     algorithm = algo_class(initial_state, obj_func, **kwargs)
-    
     with Timer(verbose=True):
         algorithm.solve()
-    
     algorithm.print_results(verbose=False)
-    
     return algorithm.get_result_dict()
 
 
-def run_experiment(input_file: str, algorithms: List[str], 
-                   output_dir: str = "./output"):
-    """
-    Menjalankan eksperimen dengan algoritma yang dipilih.
-    
-    Args:
-        input_file: Path ke file input JSON
-        algorithms: List algoritma yang akan dijalankan
-        output_dir: Directory untuk output
-    """
+def run_experiment(input_file: str, algorithms: List[str], output_dir: str = "./output"):
     print("=" * 70)
     print("BIN PACKING PROBLEM - LOCAL SEARCH SOLVER")
     print("=" * 70)
@@ -82,7 +58,7 @@ def run_experiment(input_file: str, algorithms: List[str],
     
     # 2. Initialize
     print(f"\n🔧 Initializing with Best Fit...")
-    initial_state = BinPackingInitializer.best_fit(items, capacity)
+    initial_state = BinPackingInitializer.worst_fit(items, capacity)
     obj_func = ObjectiveFunction()
     
     print(f"   Initial containers: {initial_state.num_containers()}")
@@ -100,6 +76,9 @@ def run_experiment(input_file: str, algorithms: List[str],
         algo_list.append(("Stochastic Hill Climbing", StochasticHillClimbing, {"max_iterations": 1000, "seed": 42}))
     if 'sideways' in algorithms or 'all' in algorithms:
         algo_list.append(("Sideways Move Hill Climbing", SidewaysMoveHillClimbing, {"max_iterations": 1000, "max_sideways_moves": 100}))
+    if 'ga' in algorithms or 'all' in algorithms:
+        algo_list.append(("Genetic", GeneticAlgorithm, {"items": items,"capacity": capacity,"mutation_probability":0.5, "population_size":50, "max_iterations":1000}))
+    #if simulated annealing 
 
     for algo_name, algo_class, kwargs in algo_list:
         print(f"\n{'='*70}\nAlgoritma: {algo_name}\n{'='*70}")
@@ -119,12 +98,20 @@ def run_experiment(input_file: str, algorithms: List[str],
 
         print(f"Jumlah kontainer akhir: {final_state.num_containers()}")
         print(f"Detail isi setiap kontainer:")
-        for idx, container in enumerate(final_state.containers):
-            load = final_state.get_container_load(idx)
-            items_str = ', '.join([f"{item_id}({final_state.items[item_id]})" for item_id in container])
-            print(f"  - Kontainer {idx+1} ({load}/{final_state.capacity}): {items_str}")
+        ResultVisualizer.visualize_containers_ascii(final_state, f"Final State Algoritma {algo_name}")
         print('-'*70)
-    
+
+        if algo_name.lower().startswith("genetic"):
+            generations_data = result.get('genetic_params', {}).get('generations_data', None)
+            if generations_data:
+                ResultVisualizer.plot_genetic_progression(generations_data)
+        # Yang lain, kosongkan saja
+        elif algo_name.lower().startswith("steepest") or algo_name.lower().startswith("stochastic") or algo_name.lower().startswith("sideways"):
+            pass
+        elif algo_name.lower().startswith("simulated"):
+            pass
+
+
     # 4. Visualize results
     # print(f"\n📊 Generating visualizations...")
     # ResultVisualizer.create_experiment_report(results, output_dir)
