@@ -100,7 +100,18 @@ def run_experiment(input_file: str, algorithms: List[str], output_dir: str = "./
         print(f"Detail isi setiap kontainer:")
         ResultVisualizer.visualize_containers_ascii(final_state, f"Final State Algoritma {algo_name}")
         print('-'*70)
-    
+
+        if algo_name.lower().startswith("genetic"):
+            generations_data = result.get('genetic_params', {}).get('generations_data', None)
+            if generations_data:
+                ResultVisualizer.plot_genetic_progression(generations_data)
+        # Yang lain, kosongkan saja
+        elif algo_name.lower().startswith("steepest") or algo_name.lower().startswith("stochastic") or algo_name.lower().startswith("sideways"):
+            pass
+        elif algo_name.lower().startswith("simulated"):
+            pass
+
+
     # 4. Visualize results
     # print(f"\n📊 Generating visualizations...")
     # ResultVisualizer.create_experiment_report(results, output_dir)

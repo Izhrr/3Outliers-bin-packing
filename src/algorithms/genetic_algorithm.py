@@ -28,6 +28,7 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
             "population_size": self.population_size,
             "mutation_probability": self.mutation_probability,
             "max_iterations": self.max_iterations,
+            'generations_data': self.generations_data,
         }
         result["final_state"] = self.best_state
         return result
@@ -201,10 +202,16 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
         return self.population[best_idx]
 
     def solve(self):
+        import time
         start_time = time.perf_counter()
         self.initialize_population()
         fitness_list = self.fitness_function()
-        for _ in range(self.max_iterations):
+
+        self.generations_data = []
+        self.global_best_value = float('inf')
+        self.global_best_state = None
+
+        for gen in range(self.max_iterations):
             parents = self.tournament_selection(fitness_list=fitness_list)
             children = self.crossover(parents=parents)
 
@@ -216,14 +223,34 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
             fitness_list = children_fitness
 
             best_fitness = min(fitness_list)
+            avg_fitness = sum(fitness_list) / len(fitness_list) if fitness_list else 0
+
+            # Cari solusi terbaik di generasi ini
+            best_idx = fitness_list.index(best_fitness)
+            best_state_now = self.population[best_idx]
+
+            # Jika ada solusi lebih baik dari global best, update
+            if best_fitness < self.global_best_value:
+                self.global_best_value = best_fitness
+                self.global_best_state = best_state_now.copy()  # copy biar ga keubah
+
+            # Simpan data generasi untuk visualisasi
+            self.generations_data.append({
+                'generation': gen + 1,  # Generasi mulai dari 1
+                'best_fitness': best_fitness,
+                'avg_fitness': avg_fitness
+            })
+
             self.history.append(best_fitness)
             self.iteration_count += 1
 
         end_time = time.perf_counter()
-        self.best_state = self.get_best_solution()
-        self.best_value = self.objective_function.calculate(self.best_state)
+        # Gunakan solusi terbaik global!
+        self.best_state = self.global_best_state
+        self.best_value = self.global_best_value
         self.duration = end_time - start_time
 
+        # (Opsional) Jika ingin tetap cek dibanding initial_value:
         initial_value = self.objective_function.calculate(self.initial_state)
         if self.best_value > initial_value:
             self.best_state = self.initial_state
