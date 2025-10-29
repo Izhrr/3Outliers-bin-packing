@@ -270,6 +270,161 @@ class SidewaysMoveHillClimbing(HillClimbingBase):
         stats['stuck_reason'] = self.stuck_reason
         return stats
 
+class RandomRestartHillClimbing(HillClimbingBase):
+    """
+    Random Restart Hill Climbing.
+    
+    Algoritma:
+    1. Lakukan Hill Climbing (Steepest Ascent) dari initial state acak
+    2. Simpan hasil terbaik dari run tersebut
+    3. Restart dengan initial state acak yang baru
+    4. Ulangi sampai max_restarts tercapai
+    5. Return solusi terbaik dari semua restart
+    
+    Karakteristik:
+    - Mengatasi masalah stuck di local optimum
+    - Trade-off: waktu vs kualitas solusi
+    - Non-deterministic (hasil berbeda setiap run)
+    - Lebih robust dibanding single-run HC
+    
+    Catatan:
+    - Menggunakan BinPackingInitializer.random_fit() untuk generate initial state baru
+    - Setiap restart independen (tidak ada informasi yang dibawa dari restart sebelumnya)
+    """
+    
+    def __init__(self, items: dict, capacity: int, objective_function, 
+                 max_restarts: int = 10, max_iterations_per_run: int = 100,
+                 seed: Optional[int] = None):
+        """
+        Args:
+            items: Dictionary {item_id: size}
+            capacity: Kapasitas bin
+            objective_function: Fungsi objektif untuk evaluasi
+            max_restarts: Jumlah restart maksimal
+            max_iterations_per_run: Iterasi maksimal per restart
+            seed: Random seed untuk reproducibility
+        """
+        # Import di sini untuk avoid circular import
+        from src.core.initializer import BinPackingInitializer
+        
+        # Generate initial state pertama
+        initial_state = BinPackingInitializer.random_fit(items, capacity)
+        super().__init__(initial_state, objective_function, max_iterations_per_run)
+        
+        # Store items dan capacity untuk generate initial state baru
+        self.items = items
+        self.capacity = capacity
+        self.initializer = BinPackingInitializer
+        
+        self.max_restarts = max_restarts
+        self.max_iterations_per_run = max_iterations_per_run  
+        self.seed = seed
+        if seed is not None:
+            random.seed(seed)
+        
+        # Track best solution across all restarts
+        self.best_state_overall = self.current_state.copy()
+        self.best_value_overall = self.evaluate_state(self.best_state_overall)
+        
+        # History untuk setiap restart
+        self.runs_history = []
+        
+    def get_name(self) -> str:
+        return f"Random Restart Hill Climbing (restarts={self.max_restarts})"
+    
+    def solve(self):
+        """Main algorithm"""
+        start_time = time.perf_counter()
+        
+        for restart in range(self.max_restarts):
+            # 1. Generate initial state acak baru untuk setiap restart
+            if restart == 0:
+                # Restart pertama gunakan initial state yang sudah ada
+                new_initial_state = self.current_state.copy()
+            else:
+                # Restart selanjutnya gunakan random initial state baru
+                new_initial_state = self.initializer.random_fit(self.items, self.capacity)
+            
+            # 2. Jalankan Steepest Ascent Hill Climbing dari initial state baru
+            hc_run = SteepestAscentHillClimbing(
+                new_initial_state, 
+                self.objective_function, 
+                max_iterations=self.max_iterations
+            )
+            final_state = hc_run.solve()
+            final_value = self.evaluate_state(final_state)
+            
+            # 3. Ambil statistik dari run ini
+            run_stats = hc_run.get_statistics()
+            
+            # 4. Simpan hasil run ke history
+            self.runs_history.append({
+                'restart': restart,
+                'initial_value': self.evaluate_state(new_initial_state),
+                'final_value': final_value,
+                'iterations': run_stats.get('stuck_at_iteration', run_stats['iterations']),
+                'improvement': self.evaluate_state(new_initial_state) - final_value
+            })
+            
+            # 5. Update best state overall jika run ini lebih baik
+            if final_value < self.best_value_overall:
+                self.best_value_overall = final_value
+                self.best_state_overall = final_state.copy()
+            
+            # 6. Record untuk plotting (track best value across restarts)
+            self.record_iteration(self.best_value_overall)
+
+        self.duration = time.perf_counter() - start_time
+        
+        # Set current_state dan best_state ke best overall
+        self.current_state = self.best_state_overall.copy()
+        self.best_state = self.best_state_overall.copy()
+        self.best_value = self.best_value_overall
+        
+        return self.best_state_overall
+
+    def get_statistics(self) -> dict:
+        """Return statistik lengkap termasuk detail setiap restart"""
+        stats = super().get_statistics()
+        
+        # Override beberapa stats untuk Random Restart
+        stats['max_restarts'] = self.max_restarts
+        stats['total_restarts_executed'] = len(self.runs_history)
+        stats['best_value_overall'] = self.best_value_overall
+        stats['seed'] = self.seed
+        
+        # Total iterasi per restart
+        stats['max_iterations_per_run'] = self.max_iterations_per_run
+        
+        # Detail setiap restart
+        stats['runs_history'] = self.runs_history
+        
+        # Summary total iterasi
+        if len(self.runs_history) > 0:
+            # Total iterasi dari semua restart
+            total_iterations_all_runs = sum(run['iterations'] for run in self.runs_history)
+            stats['total_iterations_all_runs'] = total_iterations_all_runs
+            
+            # Rata-rata iterasi per restart
+            stats['average_iterations_per_run'] = total_iterations_all_runs / len(self.runs_history)
+            
+            # Min dan max iterasi per restart
+            iterations_list = [run['iterations'] for run in self.runs_history]
+            stats['min_iterations_per_run'] = min(iterations_list)
+            stats['max_iterations_per_run_actual'] = max(iterations_list)
+            
+            # Summary final values
+            final_values = [run['final_value'] for run in self.runs_history]
+            stats['average_final_value'] = sum(final_values) / len(final_values)
+            stats['worst_final_value'] = max(final_values)
+            stats['best_final_value'] = min(final_values)
+            
+            # Summary improvements
+            improvements = [run['improvement'] for run in self.runs_history]
+            stats['average_improvement'] = sum(improvements) / len(improvements)
+            stats['best_improvement'] = max(improvements)
+        
+        return stats
 
 # Demo
 def demo_hill_climbing():
@@ -313,6 +468,17 @@ def demo_hill_climbing():
     hc3.solve()
     hc3.print_results(verbose=False)
 
+    # 4. Random Restart
+    print("\n4. Random Restart Hill Climbing")
+    print("-" * 60)
+    hc4 = RandomRestartHillClimbing(
+        items, capacity, obj_func, 
+        max_restarts=5, 
+        max_iterations_per_run=50,
+        seed=42
+    )
+    hc4.solve()
+    hc4.print_results(verbose=True)  
 
 if __name__ == "__main__":
     demo_hill_climbing()
