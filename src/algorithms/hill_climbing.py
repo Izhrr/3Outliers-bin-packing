@@ -268,9 +268,9 @@ class SidewaysMoveHillClimbing(HillClimbingBase):
 # Demo
 def demo_hill_climbing():
     """Demo penggunaan Hill Climbing variants"""
-    from core.state import State
-    from core.objective_function import ObjectiveFunction
-    from core.initializer import BinPackingInitializer
+    from src.core.state import State
+    from src.core.objective_function import ObjectiveFunction
+    from src.core.initializer import BinPackingInitializer
     
     # Setup problem
     items = {
@@ -291,22 +291,22 @@ def demo_hill_climbing():
     print("-" * 60)
     hc1 = SteepestAscentHillClimbing(initial_state, obj_func, max_iterations=100)
     hc1.solve()
-    hc1.print_results(verbose=False)
+    hc1.print_results(verbose=True)
     
     # 2. Stochastic
     print("\n2. Stochastic Hill Climbing")
     print("-" * 60)
     hc2 = StochasticHillClimbing(initial_state, obj_func, max_iterations=100, seed=42)
     hc2.solve()
-    hc2.print_results(verbose=False)
+    hc2.print_results(verbose=True)
     
     # 3. Sideways Move
     print("\n3. Hill Climbing with Sideways Move")
     print("-" * 60)
     hc3 = SidewaysMoveHillClimbing(initial_state, obj_func, max_iterations=100, max_sideways_moves=20)
     hc3.solve()
-    hc3.print_results(verbose=False)
+    hc3.print_results(verbose=True)
 
 
-if __name__ == "__main__":
-    demo_hill_climbing()
+# if __name__ == "__main__":
+#     demo_hill_climbing()

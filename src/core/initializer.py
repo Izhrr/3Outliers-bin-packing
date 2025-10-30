@@ -15,7 +15,6 @@ from typing import Dict, List, Optional
 import random
 from core.state import State
 
-
 class BinPackingInitializer:
     """
     Class untuk membuat state awal menggunakan berbagai heuristik.

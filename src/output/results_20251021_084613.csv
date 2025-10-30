@@ -1,2 +1,0 @@
-algorithm,num_containers_final,num_containers_initial,objective_final,objective_initial,improvement_percent,duration_seconds,iterations,is_valid
-Steepest Ascent Hill Climbing,4,4,423.625,427.025,0.7962063111059018,0.001872699999694305,2,True

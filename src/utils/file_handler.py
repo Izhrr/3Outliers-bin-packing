@@ -1,7 +1,6 @@
 """
-file_handler.py - Handler untuk membaca dan menulis file
+Handler untuk membaca dan menulis file
 
-Mendukung:
 - Membaca input dari JSON
 - Menulis hasil eksperimen ke JSON
 - Export results untuk analisis
