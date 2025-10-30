@@ -24,13 +24,13 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
     def get_result_dict(self):
         stats = super().get_statistics()
         result = super().get_result_dict()
-        result['genetic_params'] = {
+        result['ga_metrics'] = {
             "population_size": self.population_size,
             "mutation_probability": self.mutation_probability,
             "max_iterations": self.max_iterations,
             'generations_data': self.generations_data,
         }
-        result["final_state"] = self.best_state
+        result["_final_state_object"] = self.best_state
         return result
 
     def initialize_population(self):
@@ -39,14 +39,6 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
             initial_state_choice = random.randint(1,2)
             if initial_state_choice == 1:
                 state = BinPackingInitializer.best_fit(self.items, self.capacity)
-            # elif initial_state_choice == 2:
-            #     state = BinPackingInitializer.first_fit(self.items, self.capacity)
-            # elif initial_state_choice == 3:
-            #     state = BinPackingInitializer.worst_fit(self.items, self.capacity)
-            # elif initial_state_choice == 4:
-            #     state = BinPackingInitializer.next_fit(self.items, self.capacity)
-            # elif initial_state_choice == 5:
-            #     state = BinPackingInitializer.random_fit(self.items, self.capacity, seed=i)
             elif initial_state_choice == 2:
                 state = BinPackingInitializer.greedy_fit(self.items, self.capacity)
 
@@ -92,7 +84,7 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
     def crossover(self, parents):
         parent_1 = parents[0]
         parent_2 = parents[1]
-        # Step 1: Gabungkan semua item dari kedua parent
+        # Gabungkan semua item dari kedua parent
         items_in_p1 = [item for container in parent_1.containers for item in container]
         items_in_p2 = [item for container in parent_2.containers for item in container]
         combined_items = list(dict.fromkeys(items_in_p1 + items_in_p2))  # urut, unik
@@ -149,7 +141,7 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
                 selected_item = containers[random_index][move]
                 item_weight = self.items[selected_item]
 
-                # Cari semua container yang cukup kapasitasnya (kecuali asal)
+                # Cari semua container yang cukup kapasitasnya
                 valid_targets = []
                 for i, c in enumerate(containers):
                     if i == random_index:
@@ -162,9 +154,7 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
                 if valid_targets:
                     random_container = random.choice(valid_targets)
                 else:
-                    # Kalau tidak ada yang cukup, buat container baru
-                    containers.append([])
-                    random_container = len(containers) - 1
+                    return new_state
 
                 # Pindah item
                 containers[random_index].remove(selected_item)
@@ -185,9 +175,7 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
                     if valid_targets:
                         move = random.choice(valid_targets)
                     else:
-                        # Kalau tidak ada yang cukup, buat container baru
-                        containers.append([])
-                        move = len(containers) - 1
+                        return new_state
                     containers[move].append(item)
 
             # Bersihkan container kosong
