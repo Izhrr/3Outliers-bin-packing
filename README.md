@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/d3f3dc66-ccd1-4516-a5b8-88114d878e67" width="200" height="200" alt="image" />
+  <img width="252" height="200" alt="image" src="https://github.com/user-attachments/assets/c39265b1-a855-476a-a195-9396ae330b89" />
 </div>
 
 # 3Outliers Bin Packing
