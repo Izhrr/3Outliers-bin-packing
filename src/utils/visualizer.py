@@ -335,6 +335,112 @@ class ResultVisualizer:
             print(f"Plot saved to: {save_path}")
 
         plt.show()
+    
+    @staticmethod
+    def plot_hill_climbing_progress(algorithm_stats: dict, 
+                                    history: list,
+                                    title: str = None,
+                                    save_path: str = None):
+        """
+        Plot UNIVERSAL untuk semua varian Hill Climbing.
+        Auto-detect varian dan tampilkan info yang relevan.
+        
+        Args:
+            algorithm_stats: Dict dari get_statistics()
+            history: List of objective values per iteration
+            title: Custom title (optional)
+            save_path: Path untuk save plot (optional)
+        
+        Returns:
+            matplotlib Figure object
+        """
+        if not history or len(history) == 0:
+            print("No history data available for plotting")
+            return None
+        
+        fig, ax = plt.subplots(figsize=(12, 7))
+        
+        # ===== PLOT UTAMA =====
+        iterations = range(len(history))
+        ax.plot(iterations, history, marker='o', linestyle='-', 
+                color='dodgerblue', linewidth=2, markersize=4, 
+                label='Objective Function', zorder=3)
+        
+        # ===== HIGHLIGHT: Stuck Iteration =====
+        stuck_iter = algorithm_stats.get('stuck_at_iteration')
+        if stuck_iter is not None and stuck_iter < len(history):
+            ax.axvline(x=stuck_iter, color='red', linestyle='--', 
+                      linewidth=2, alpha=0.7, 
+                      label=f'Stuck at iteration {stuck_iter}', zorder=2)
+            ax.plot(stuck_iter, history[stuck_iter], 'r*', 
+                   markersize=15, label='Stuck Point', zorder=4)
+        
+        # ===== HIGHLIGHT: Best Value =====
+        best_value = min(history)
+        best_iter = history.index(best_value)
+        ax.plot(best_iter, best_value, 'g*', markersize=15, 
+               label=f'Best (iter {best_iter})', zorder=4)
+        
+        # ===== LABELS =====
+        ax.set_xlabel('Iteration', fontsize=12, fontweight='bold')
+        ax.set_ylabel('Objective Function Value', fontsize=12, fontweight='bold')
+        
+        algo_name = algorithm_stats.get('algorithm', 'Hill Climbing')
+        ax.set_title(title or f'{algo_name} - Progress', 
+                    fontsize=14, fontweight='bold')
+        
+        ax.legend(fontsize=10, loc='upper right')
+        ax.grid(True, linestyle='--', alpha=0.4)
+        
+        # ===== INFO BOX =====
+        info_lines = []
+        info_lines.append(f"Algorithm: {algo_name}")
+        info_lines.append(f"Duration: {algorithm_stats.get('duration', 0):.4f}s")
+        info_lines.append(f"Total Iterations: {len(history)}")
+        info_lines.append(f"Final Objective: {history[-1]:.2f}")
+        info_lines.append(f"Best Objective: {best_value:.2f}")
+        
+        # Auto-detect variant dan tambahkan info
+        if 'seed' in algorithm_stats:
+            seed_val = algorithm_stats.get('seed')
+            info_lines.append(f"Seed: {seed_val if seed_val is not None else 'Random'}")
+        
+        if 'max_sideways_moves' in algorithm_stats:
+            sideways = algorithm_stats.get('total_sideways_moves', 0)
+            max_sideways = algorithm_stats.get('max_sideways_moves', 0)
+            info_lines.append(f"Sideways: {sideways}/{max_sideways}")
+        
+        if 'max_restarts' in algorithm_stats:
+            restarts = algorithm_stats.get('total_restarts_executed', 0)
+            max_restarts = algorithm_stats.get('max_restarts', 0)
+            avg_iter = algorithm_stats.get('average_iterations_per_run', 0)
+            info_lines.append(f"Restarts: {restarts}/{max_restarts}")
+            info_lines.append(f"Avg Iter/Run: {avg_iter:.1f}")
+        
+        if stuck_iter is not None:
+            reason = algorithm_stats.get('stuck_reason', 'local_optimum')
+            reason_map = {
+                'local_optimum': 'Local Optimum',
+                'max_sideways_reached': 'Max Sideways',
+                'max_iterations': 'Max Iterations'
+            }
+            info_lines.append(f"Stuck: {reason_map.get(reason, reason)}")
+        
+        # Render info box
+        info_text = '\n'.join(info_lines)
+        ax.text(0.02, 0.98, info_text, transform=ax.transAxes,
+               fontsize=9, verticalalignment='top',
+               bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.85),
+               family='monospace')
+        
+        plt.tight_layout()
+        
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            print(f"   ✓ Plot saved: {save_path}")
+        
+        plt.show()
+        return fig
 
 # Demo
 def demo_visualizer():
