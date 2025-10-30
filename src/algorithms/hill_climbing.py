@@ -607,6 +607,73 @@ class RandomRestartHillClimbing(HillClimbingBase):
             stats['best_improvement'] = max(improvements)
         
         return stats
+    
+    def print_results(self, verbose: bool = True):
+        """Print hasil dengan detail lengkap termasuk per-restart info"""
+        if verbose:
+            from src.utils.visualizer import ResultVisualizer
+            
+            print("\n" + "="*80)
+            print(f"RESULTS - {self.get_name()}")
+            print("="*80)
+            
+            # ===== STATE AWAL (first restart) =====
+            print("\n" + "─"*80)
+            print(">>> INITIAL STATE (First Restart)")
+            print("─"*80)
+            ResultVisualizer.visualize_containers_ascii(self.initial_state, "Initial State")
+            if len(self.runs_history) > 0:
+                print(f"\n➤ Initial Objective (First Restart): {self.runs_history[0]['initial_value']:.2f}")
+            
+            # ===== STATE AKHIR (best overall) =====
+            print("\n" + "─"*80)
+            print(">>> FINAL STATE (Best Overall)")
+            print("─"*80)
+            ResultVisualizer.visualize_containers_ascii(self.best_state_overall, "Final State")
+            print(f"\n➤ Final Objective (Best): {self.best_value_overall:.2f}")
+            print(f"➤ Final Containers: {self.best_state_overall.num_containers()}")
+            print(f"➤ Valid Solution: {'✓ YES' if self.best_state_overall.is_valid() else '✗ NO'}")
+            
+            # ===== PER-RESTART SUMMARY =====
+            print("\n" + "─"*80)
+            print(">>> PER-RESTART SUMMARY")
+            print("─"*80)
+            for run in self.runs_history:
+                print(f"Restart {run['restart']}: "
+                      f"Initial={run['initial_value']:.2f} → "
+                      f"Final={run['final_value']:.2f} "
+                      f"(Improvement: {run['improvement']:.2f}, "
+                      f"Iterations: {run['iterations']})")
+        
+        # ===== STATISTICS =====
+        print("\n" + "─"*80)
+        print(">>> STATISTICS")
+        print("─"*80)
+        print(f"➤ Algorithm: {self.get_name()}")
+        print(f"➤ Duration: {self.duration:.4f} seconds")
+        print(f"➤ Total Restarts Executed: {len(self.runs_history)}")
+        print(f"➤ Maximum Restarts: {self.max_restarts}")
+        print(f"➤ Best Objective (Overall): {self.best_value_overall:.2f}")
+        
+        # Summary iterasi
+        if len(self.runs_history) > 0:
+            total_iters = sum(run['iterations'] for run in self.runs_history)
+            avg_iter = total_iters / len(self.runs_history)
+            min_iter = min(run['iterations'] for run in self.runs_history)
+            max_iter = max(run['iterations'] for run in self.runs_history)
+            
+            print(f"➤ Total Iterations (All Runs): {total_iters}")
+            print(f"➤ Average Iterations per Run: {avg_iter:.2f}")
+            print(f"➤ Iterations Range: {min_iter} - {max_iter}")
+            
+            # Summary improvement
+            avg_improvement = sum(run['improvement'] for run in self.runs_history) / len(self.runs_history)
+            best_improvement = max(run['improvement'] for run in self.runs_history)
+            print(f"➤ Average Improvement per Run: {avg_improvement:.2f}")
+            print(f"➤ Best Improvement (Single Run): {best_improvement:.2f}")
+        
+        if verbose:
+            print("\n" + "="*80)
 
 # Demo
 def demo_hill_climbing():
