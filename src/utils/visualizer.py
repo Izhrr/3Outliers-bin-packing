@@ -57,44 +57,102 @@ class ResultVisualizer:
     
     @staticmethod
     def plot_single_objective_history(result: Dict,
-                                      title: str = None,
-                                      save_path: str = None):
+                                    title: str = None,
+                                    save_path: str = None):
         """
-        Plot objective function
+        Plot objective function history - UNIVERSAL untuk semua algoritma.
+        Support Random Restart dengan restart points visualization.
         
         Args:
             result: Result dictionary dari algorithm.get_result_dict()
-            save_path: Path untuk save plot (REQUIRED untuk auto-save)
+            title: Custom title (optional)
+            save_path: Path untuk save plot (optional, auto-save jika diberikan)
+        
+        Returns:
+            None
         """
+        # ===== VALIDASI DATA =====
+        history = result.get('history', [])
+        if not history or len(history) == 0:
+            print("No history data available for plotting")
+            return
+        
+        algo_name = result.get('algorithm', 'Unknown Algorithm')
+        
+        # ===== CREATE FIGURE =====
         plt.figure(figsize=(12, 6))
         
-        algo_name = result['algorithm']
-        history = result['history']
         iterations = list(range(len(history)))
         
-        # Plot line
+        # ===== PLOT MAIN LINE =====
         plt.plot(iterations, history, linewidth=2, marker='o', 
-                markersize=3, markevery=max(1, len(history)//20), color='blue')
+                markersize=3, markevery=max(1, len(history)//20), 
+                color='dodgerblue', label='Objective Value', zorder=3)
         
-        # Mark best value dengan red dot
+        # ===== MARK BEST VALUE =====
         best_value = min(history)
         best_iter = history.index(best_value)
-        plt.plot(best_iter, best_value, 'ro', markersize=10, 
-                label=f'Best: {best_value:.2f} @iter {best_iter}')
+        plt.plot(best_iter, best_value, 'g*', markersize=15, 
+                label=f'Best: {best_value:.2f} @iter {best_iter}', zorder=4)
         
-        plt.xlabel('Iteration', fontsize=12)
-        plt.ylabel('Objective Function Value', fontsize=12)
+        # ===== RANDOM RESTART: MARK RESTART POINTS =====
+        if 'runs_history' in result:
+            runs_history = result['runs_history']
+            cumulative_iter = 0
+            restart_count = 0
+            
+            for i, run in enumerate(runs_history[:-1]):  # Exclude last run
+                cumulative_iter += run.get('iterations', 0)
+                if cumulative_iter < len(history):
+                    plt.axvline(x=cumulative_iter, color='orange', linestyle='--', 
+                            linewidth=1.5, alpha=0.6, zorder=2)
+                    restart_count += 1
+            
+            # Add legend untuk restart lines (hanya sekali)
+            if restart_count > 0:
+                plt.plot([], [], color='orange', linestyle='--', linewidth=1.5, 
+                    label=f'Restart Points ({restart_count})')
+        
+        # ===== LABELS =====
+        plt.xlabel('Iteration', fontsize=12, fontweight='bold')
+        plt.ylabel('Objective Function Value', fontsize=12, fontweight='bold')
         plt.title(title or f'{algo_name} - Objective Function vs Iterations', 
-                 fontsize=14, fontweight='bold')
-        plt.legend(fontsize=10)
+                fontsize=14, fontweight='bold')
+        plt.legend(fontsize=10, loc='upper right')
         plt.grid(True, alpha=0.3)
+        
+        # ===== INFO BOX (untuk Random Restart) =====
+        stats = result.get('statistics', {})
+        if 'total_restarts_executed' in stats or 'runs_history' in result:
+            info_lines = [
+                f"Total Iterations: {len(history)}",
+                f"Final Objective: {history[-1]:.2f}",
+                f"Best Objective: {best_value:.2f}"
+            ]
+            
+            # Random Restart specific info
+            if 'total_restarts_executed' in stats:
+                total_restarts = stats['total_restarts_executed']
+                avg_iter = stats.get('average_iterations_per_run', 0)
+                info_lines.append(f"Total Restarts: {total_restarts}")
+                if avg_iter > 0:
+                    info_lines.append(f"Avg Iter/Run: {avg_iter:.1f}")
+            
+            info_text = '\n'.join(info_lines)
+            plt.text(0.02, 0.98, info_text, transform=plt.gca().transAxes,
+                fontsize=9, verticalalignment='top',
+                bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.85),
+                family='monospace')
+        
         plt.tight_layout()
-        
-        if save_path:
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        
-        plt.close()
     
+    # ===== SAVE DAN CLOSE =====
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"   ✓ Objective history saved: {save_path}")
+    
+    plt.close()  
+
     @staticmethod
     def plot_sa_acceptance_probability(result: Dict,
                                        title: str = None,
@@ -194,4 +252,151 @@ class ResultVisualizer:
         if save_path:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
-        plt.close()
+        plt.show()
+
+    @staticmethod
+    def plot_hill_climbing_progress(algorithm_stats: dict, 
+                                    history: list,
+                                    title: str = None,
+                                    save_path: str = None):
+        """
+        Plot UNIVERSAL untuk semua varian Hill Climbing.
+        Auto-detect varian dan tampilkan info yang relevan.
+        
+        Args:
+            algorithm_stats: Dict dari get_statistics()
+            history: List of objective values per iteration
+            title: Custom title (optional)
+            save_path: Path untuk save plot (optional)
+        
+        Returns:
+            matplotlib Figure object
+        """
+        if not history or len(history) == 0:
+            print("No history data available for plotting")
+            return None
+        
+        fig, ax = plt.subplots(figsize=(12, 7))
+        
+        # ===== PLOT UTAMA =====
+        iterations = range(len(history))
+        ax.plot(iterations, history, marker='o', linestyle='-', 
+                color='dodgerblue', linewidth=2, markersize=4, 
+                label='Objective Function', zorder=3)
+        
+        # ===== HIGHLIGHT: Stuck Iteration =====
+        stuck_iter = algorithm_stats.get('stuck_at_iteration')
+        if stuck_iter is not None and stuck_iter < len(history):
+            ax.axvline(x=stuck_iter, color='red', linestyle='--', 
+                      linewidth=2, alpha=0.7, 
+                      label=f'Stuck at iteration {stuck_iter}', zorder=2)
+            ax.plot(stuck_iter, history[stuck_iter], 'r*', 
+                   markersize=15, label='Stuck Point', zorder=4)
+        
+        # ===== HIGHLIGHT: Best Value =====
+        best_value = min(history)
+        best_iter = history.index(best_value)
+        ax.plot(best_iter, best_value, 'g*', markersize=15, 
+               label=f'Best (iter {best_iter})', zorder=4)
+        
+        # ===== LABELS =====
+        ax.set_xlabel('Iteration', fontsize=12, fontweight='bold')
+        ax.set_ylabel('Objective Function Value', fontsize=12, fontweight='bold')
+        
+        algo_name = algorithm_stats.get('algorithm', 'Hill Climbing')
+        ax.set_title(title or f'{algo_name} - Progress', 
+                    fontsize=14, fontweight='bold')
+        
+        ax.legend(fontsize=10, loc='upper right')
+        ax.grid(True, linestyle='--', alpha=0.4)
+        
+        # ===== INFO BOX =====
+        info_lines = []
+        info_lines.append(f"Algorithm: {algo_name}")
+        info_lines.append(f"Duration: {algorithm_stats.get('duration', 0):.4f}s")
+        info_lines.append(f"Total Iterations: {len(history)}")
+        info_lines.append(f"Final Objective: {history[-1]:.2f}")
+        info_lines.append(f"Best Objective: {best_value:.2f}")
+        
+        # Auto-detect variant dan tambahkan info
+        if 'seed' in algorithm_stats:
+            seed_val = algorithm_stats.get('seed')
+            info_lines.append(f"Seed: {seed_val if seed_val is not None else 'Random'}")
+        
+        if 'max_sideways_moves' in algorithm_stats:
+            sideways = algorithm_stats.get('total_sideways_moves', 0)
+            max_sideways = algorithm_stats.get('max_sideways_moves', 0)
+            info_lines.append(f"Sideways: {sideways}/{max_sideways}")
+        
+        if 'max_restarts' in algorithm_stats:
+            restarts = algorithm_stats.get('total_restarts_executed', 0)
+            max_restarts = algorithm_stats.get('max_restarts', 0)
+            avg_iter = algorithm_stats.get('average_iterations_per_run', 0)
+            info_lines.append(f"Restarts: {restarts}/{max_restarts}")
+            info_lines.append(f"Avg Iter/Run: {avg_iter:.1f}")
+        
+        if stuck_iter is not None:
+            reason = algorithm_stats.get('stuck_reason', 'local_optimum')
+            reason_map = {
+                'local_optimum': 'Local Optimum',
+                'max_sideways_reached': 'Max Sideways',
+                'max_iterations': 'Max Iterations'
+            }
+            info_lines.append(f"Stuck: {reason_map.get(reason, reason)}")
+        
+        # Render info box
+        info_text = '\n'.join(info_lines)
+        ax.text(0.02, 0.98, info_text, transform=ax.transAxes,
+               fontsize=9, verticalalignment='top',
+               bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.85),
+               family='monospace')
+        
+        plt.tight_layout()
+        
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            print(f"   ✓ Plot saved: {save_path}")
+        
+        plt.show()
+        return fig
+
+# Demo
+def demo_visualizer():
+    """Demo penggunaan visualizer"""
+    from core.state import State
+    from core.objective_function import ObjectiveFunction
+    from core.initializer import BinPackingInitializer
+    
+    # Setup
+    items = {
+        "BRG001": 40, "BRG002": 55, "BRG003": 25,
+        "BRG004": 60, "BRG005": 30, "BRG006": 45, "BRG007": 50
+    }
+    capacity = 100
+    
+    initial_state = BinPackingInitializer.best_fit(items, capacity)
+    
+    print("Demo Visualizer")
+    print("=" * 70)
+    
+    # 1. ASCII visualization
+    ResultVisualizer.visualize_containers_ascii(initial_state, "Initial State")
+    
+    # 2. State comparison (simulasi)
+    final_state = initial_state.copy()
+    # Simulasi improvement
+    if len(final_state.containers) > 2:
+        # Gabungkan 2 kontainer terakhir jika muat
+        last_container = final_state.containers[-1]
+        second_last = final_state.containers[-2]
+        
+        total_size = sum(final_state.items[item] for item in last_container + second_last)
+        if total_size <= capacity:
+            final_state.containers[-2].extend(last_container)
+            final_state.containers.pop()
+    
+    ResultVisualizer.print_state_comparison(initial_state, final_state, "Demo Algorithm")
+
+
+if __name__ == "__main__":
+    demo_visualizer()

@@ -78,7 +78,10 @@ class SteepestAscentHillClimbing(HillClimbingBase):
             
             # Record history
             self.record_iteration(current_value)
-        
+        else:
+            # Jika loop selesai tanpa break (tidak stuck, tapi habis iterasi)
+            self.stuck_iteration = self.max_iterations
+
         self.duration = time.perf_counter() - start_time
         return self.best_state
     
@@ -86,7 +89,68 @@ class SteepestAscentHillClimbing(HillClimbingBase):
         stats = super().get_statistics()
         stats['stuck_at_iteration'] = self.stuck_iteration
         return stats
-
+    
+    def print_results(self, verbose: bool = True):
+        """
+        Print hasil algoritma dengan detail lengkap.
+        Menggunakan instance variables yang sudah ada.
+        
+        Args:
+            verbose: Jika True, tampilkan initial/final state ASCII
+        """
+        if verbose:
+            # Import di sini untuk avoid circular import
+            from src.utils.visualizer import ResultVisualizer
+            
+            print("\n" + "="*80)
+            print(f"RESULTS - {self.get_name()}")
+            print("="*80)
+            
+            # ===== STATE AWAL =====
+            print("\n" + "─"*80)
+            print(">>> INITIAL STATE")
+            print("─"*80)
+            ResultVisualizer.visualize_containers_ascii(self.initial_state, "Initial State")
+            initial_value = self.history[0] if self.history else self.evaluate_state(self.initial_state)
+            print(f"\n➤ Initial Objective: {initial_value:.2f}")
+            print(f"➤ Initial Containers: {self.initial_state.num_containers()}")
+            
+            # ===== STATE AKHIR =====
+            print("\n" + "─"*80)
+            print(">>> FINAL STATE")
+            print("─"*80)
+            ResultVisualizer.visualize_containers_ascii(self.best_state, "Final State")
+            print(f"\n➤ Final Objective: {self.best_value:.2f}")
+            print(f"➤ Final Containers: {self.best_state.num_containers()}")
+            print(f"➤ Valid Solution: {'✓ YES' if self.best_state.is_valid() else '✗ NO'}")
+            
+            # ===== IMPROVEMENT =====
+            print("\n" + "─"*80)
+            print(">>> IMPROVEMENT")
+            print("─"*80)
+            obj_improvement = initial_value - self.best_value
+            container_reduction = self.initial_state.num_containers() - self.best_state.num_containers()
+            improvement_pct = (obj_improvement / initial_value * 100) if initial_value > 0 else 0
+            
+            print(f"Objective Improvement: {obj_improvement:.2f} ({improvement_pct:.2f}%)")
+            print(f"Container Reduction: {container_reduction} containers")
+        
+        # ===== STATISTICS =====
+        print("\n" + "─"*80)
+        print(">>> STATISTICS")
+        print("─"*80)
+        print(f"➤ Algorithm: {self.get_name()}")
+        print(f"➤ Duration: {self.duration:.4f} seconds")
+        print(f"➤ Total Iterations: {len(self.history)}")
+        print(f"➤ Best Objective: {self.best_value:.2f}")
+        
+        # Stuck info
+        if self.stuck_iteration is not None:
+            print(f"➤ Stuck at Iteration: {self.stuck_iteration}")
+            print(f"➤ Stuck Reason: local_optimum")
+        
+        if verbose:
+            print("\n" + "="*80)
 
 class StochasticHillClimbing(HillClimbingBase):
     """
@@ -155,7 +219,10 @@ class StochasticHillClimbing(HillClimbingBase):
             
             # Record history
             self.record_iteration(current_value)
-        
+        else:
+            # Jika loop selesai tanpa break (tidak stuck, tapi habis iterasi)
+            self.stuck_iteration = self.max_iterations
+
         self.duration = time.perf_counter() - start_time
         return self.best_state
     
@@ -164,7 +231,62 @@ class StochasticHillClimbing(HillClimbingBase):
         stats['stuck_at_iteration'] = self.stuck_iteration
         stats['seed'] = self.seed
         return stats
-
+    
+    def print_results(self, verbose: bool = True):
+        if verbose:
+            from src.utils.visualizer import ResultVisualizer
+            
+            print("\n" + "="*80)
+            print(f"RESULTS - {self.get_name()}")
+            print("="*80)
+            
+            # ===== STATE AWAL =====
+            print("\n" + "─"*80)
+            print(">>> INITIAL STATE")
+            print("─"*80)
+            ResultVisualizer.visualize_containers_ascii(self.initial_state, "Initial State")
+            initial_value = self.history[0] if self.history else self.evaluate_state(self.initial_state)
+            print(f"\n➤ Initial Objective: {initial_value:.2f}")
+            print(f"➤ Initial Containers: {self.initial_state.num_containers()}")
+            
+            # ===== STATE AKHIR =====
+            print("\n" + "─"*80)
+            print(">>> FINAL STATE")
+            print("─"*80)
+            ResultVisualizer.visualize_containers_ascii(self.best_state, "Final State")
+            print(f"\n➤ Final Objective: {self.best_value:.2f}")
+            print(f"➤ Final Containers: {self.best_state.num_containers()}")
+            print(f"➤ Valid Solution: {'YES' if self.best_state.is_valid() else 'NO'}")
+            
+            # ===== IMPROVEMENT =====
+            print("\n" + "─"*80)
+            print(">>> IMPROVEMENT")
+            print("─"*80)
+            obj_improvement = initial_value - self.best_value
+            container_reduction = self.initial_state.num_containers() - self.best_state.num_containers()
+            improvement_pct = (obj_improvement / initial_value * 100) if initial_value > 0 else 0
+            
+            print(f"Objective Improvement: {obj_improvement:.2f} ({improvement_pct:.2f}%)")
+            print(f"Container Reduction: {container_reduction} containers")
+        
+        # ===== STATISTICS =====
+        print("\n" + "─"*80)
+        print(">>> STATISTICS")
+        print("─"*80)
+        print(f"➤ Algorithm: {self.get_name()}")
+        print(f"➤ Duration: {self.duration:.4f} seconds")
+        print(f"➤ Total Iterations: {len(self.history)}")
+        print(f"➤ Best Objective: {self.best_value:.2f}")
+        
+        # Stuck info
+        if self.stuck_iteration is not None:
+            print(f"➤ Stuck at Iteration: {self.stuck_iteration}")
+        
+        # Seed info
+        print(f"➤ Random Seed: {self.seed if self.seed is not None else 'None (truly random)'}")
+        
+        if verbose:
+            print("\n" + "="*80)
 
 class SidewaysMoveHillClimbing(HillClimbingBase):
     """
@@ -218,9 +340,15 @@ class SidewaysMoveHillClimbing(HillClimbingBase):
                 neighbor_value = self.evaluate_state(neighbor_state)
                 
                 # Ambil yang terkecil (minimisasi)
-                if neighbor_value < best_neighbor_value:
+                if neighbor_value <= best_neighbor_value:
                     best_neighbor = neighbor_state
                     best_neighbor_value = neighbor_value
+            
+             # Jika tidak ada neighbor yang sama atau lebih baik
+            if best_neighbor is None:
+                self.stuck_iteration = iteration
+                self.stuck_reason = "local_optimum"
+                break
             
             # Cek apakah ada improvement
             if best_neighbor_value < current_value:
@@ -263,8 +391,307 @@ class SidewaysMoveHillClimbing(HillClimbingBase):
         stats['stuck_at_iteration'] = self.stuck_iteration
         stats['stuck_reason'] = self.stuck_reason
         return stats
+    
+    def print_results(self, verbose: bool = True):
+        if verbose:
+            from src.utils.visualizer import ResultVisualizer
+            
+            print("\n" + "="*80)
+            print(f"RESULTS - {self.get_name()}")
+            print("="*80)
+            
+            # ===== STATE AWAL =====
+            print("\n" + "─"*80)
+            print(">>> INITIAL STATE")
+            print("─"*80)
+            ResultVisualizer.visualize_containers_ascii(self.initial_state, "Initial State")
+            initial_value = self.history[0] if self.history else self.evaluate_state(self.initial_state)
+            print(f"\n➤ Initial Objective: {initial_value:.2f}")
+            print(f"➤ Initial Containers: {self.initial_state.num_containers()}")
+            
+            # ===== STATE AKHIR =====
+            print("\n" + "─"*80)
+            print(">>> FINAL STATE")
+            print("─"*80)
+            ResultVisualizer.visualize_containers_ascii(self.best_state, "Final State")
+            print(f"\n➤ Final Objective: {self.best_value:.2f}")
+            print(f"➤ Final Containers: {self.best_state.num_containers()}")
+            print(f"➤ Valid Solution: {'✓ YES' if self.best_state.is_valid() else '✗ NO'}")
+            
+            # ===== IMPROVEMENT =====
+            print("\n" + "─"*80)
+            print(">>> IMPROVEMENT")
+            print("─"*80)
+            obj_improvement = initial_value - self.best_value
+            container_reduction = self.initial_state.num_containers() - self.best_state.num_containers()
+            improvement_pct = (obj_improvement / initial_value * 100) if initial_value > 0 else 0
+            
+            print(f"Objective Improvement: {obj_improvement:.2f} ({improvement_pct:.2f}%)")
+            print(f"Container Reduction: {container_reduction} containers")
+        
+        # ===== STATISTICS =====
+        print("\n" + "─"*80)
+        print(">>> STATISTICS")
+        print("─"*80)
+        print(f"➤ Algorithm: {self.get_name()}")
+        print(f"➤ Duration: {self.duration:.4f} seconds")
+        print(f"➤ Total Iterations: {len(self.history)}")
+        print(f"➤ Best Objective: {self.best_value:.2f}")
+        
+        # Stuck info
+        if self.stuck_iteration is not None:
+            print(f"➤ Stuck at Iteration: {self.stuck_iteration}")
+            print(f"➤ Stuck Reason: {self.stuck_reason}")
+        
+        # Sideways specific info
+        print(f"➤ Total Sideways Moves: {self.sideways_count}")
+        print(f"➤ Maximum Sideways Allowed: {self.max_sideways_moves}")
+        if self.sideways_count >= self.max_sideways_moves:
+            print(f"Maximum sideways limit reached!")
+        
+        if verbose:
+            print("\n" + "="*80)
 
+class RandomRestartHillClimbing(HillClimbingBase):
+    """
+    Random Restart Hill Climbing.
+    
+    Algoritma:
+    1. Lakukan Hill Climbing (Steepest Ascent) dari initial state acak
+    2. Simpan hasil terbaik dari run tersebut
+    3. Restart dengan initial state acak yang baru
+    4. Ulangi sampai max_restarts tercapai
+    5. Return solusi terbaik dari semua restart
+    
+    Karakteristik:
+    - Mengatasi masalah stuck di local optimum
+    - Trade-off: waktu vs kualitas solusi
+    - Non-deterministic (hasil berbeda setiap run)
+    - Lebih robust dibanding single-run HC
+    
+    Catatan:
+    - Menggunakan BinPackingInitializer.random_fit() untuk generate initial state baru
+    - Setiap restart independen (tidak ada informasi yang dibawa dari restart sebelumnya)
+    """
+    
+    def __init__(self, items: dict, capacity: int, objective_function, 
+                 max_restarts: int = 10, max_iterations_per_run: int = 100,
+                 seed: Optional[int] = None):
+        """
+        Args:
+            items: Dictionary {item_id: size}
+            capacity: Kapasitas bin
+            objective_function: Fungsi objektif untuk evaluasi
+            max_restarts: Jumlah restart maksimal
+            max_iterations_per_run: Iterasi maksimal per restart
+            seed: Random seed untuk reproducibility
+        """
+        # Import di sini untuk avoid circular import
+        from src.core.initializer import BinPackingInitializer
+        
+        # Generate initial state pertama
+        initial_state = BinPackingInitializer.random_fit(items, capacity)
+        super().__init__(initial_state, objective_function, max_iterations_per_run)
+        
+        # Store items dan capacity untuk generate initial state baru
+        self.items = items
+        self.capacity = capacity
+        self.initializer = BinPackingInitializer
+        
+        self.max_restarts = max_restarts
+        self.max_iterations_per_run = max_iterations_per_run  
+        self.seed = seed
+        if seed is not None:
+            random.seed(seed)
+        
+        # Track best solution across all restarts
+        self.best_state_overall = self.current_state.copy()
+        self.best_value_overall = self.evaluate_state(self.best_state_overall)
+        
+        # History untuk setiap restart
+        self.runs_history = []
+        
+    def get_name(self) -> str:
+        return f"Random Restart Hill Climbing (restarts={self.max_restarts})"
+    
+    def solve(self):
+        """Main algorithm"""
+        start_time = time.perf_counter()
+        
+        for restart in range(self.max_restarts):
+            # 1. Generate initial state acak baru untuk setiap restart
+            if restart == 0:
+                # Restart pertama gunakan initial state yang sudah ada
+                new_initial_state = self.current_state.copy()
+            else:
+                # Restart selanjutnya gunakan random initial state baru
+                new_initial_state = self.initializer.random_fit(self.items, self.capacity)
+            
+            # 2. Jalankan Steepest Ascent Hill Climbing dari initial state baru
+            hc_run = SteepestAscentHillClimbing(
+                new_initial_state, 
+                self.objective_function, 
+                max_iterations=self.max_iterations
+            )
+            final_state = hc_run.solve()
+            final_value = self.evaluate_state(final_state)
+            
+            # 3. Ambil statistik dari run ini
+            run_stats = hc_run.get_statistics()
+            
+            # 4. Simpan hasil run ke history
+            self.runs_history.append({
+                'restart': restart,
+                'initial_value': self.evaluate_state(new_initial_state),
+                'final_value': final_value,
+                'iterations': run_stats.get('stuck_at_iteration', run_stats['iterations']),
+                'improvement': self.evaluate_state(new_initial_state) - final_value
+            })
+            
+            # 5. Update best state overall jika run ini lebih baik
+            if final_value < self.best_value_overall:
+                self.best_value_overall = final_value
+                self.best_state_overall = final_state.copy()
+            
+            # 6. Record untuk plotting (track best value across restarts)
+            self.record_iteration(self.best_value_overall)
 
+        self.duration = time.perf_counter() - start_time
+        
+        # Set current_state dan best_state ke best overall
+        self.current_state = self.best_state_overall.copy()
+        self.best_state = self.best_state_overall.copy()
+        self.best_value = self.best_value_overall
+        
+        return self.best_state_overall
+
+    def get_statistics(self) -> dict:
+        """Return statistik lengkap termasuk detail setiap restart"""
+        stats = super().get_statistics()
+        
+        # Override beberapa stats untuk Random Restart
+        stats['max_restarts'] = self.max_restarts
+        stats['total_restarts_executed'] = len(self.runs_history)
+        stats['best_value_overall'] = self.best_value_overall
+        stats['seed'] = self.seed
+        
+        # Total iterasi per restart
+        stats['max_iterations_per_run'] = self.max_iterations_per_run
+        
+        # Detail setiap restart
+        stats['runs_history'] = self.runs_history
+        
+        # Summary total iterasi
+        if len(self.runs_history) > 0:
+            # Total iterasi dari semua restart
+            total_iterations_all_runs = sum(run['iterations'] for run in self.runs_history)
+            stats['total_iterations_all_runs'] = total_iterations_all_runs
+            
+            # Rata-rata iterasi per restart
+            stats['average_iterations_per_run'] = total_iterations_all_runs / len(self.runs_history)
+            
+            # Min dan max iterasi per restart
+            iterations_list = [run['iterations'] for run in self.runs_history]
+            stats['min_iterations_per_run'] = min(iterations_list)
+            stats['max_iterations_per_run_actual'] = max(iterations_list)
+            
+            # Summary final values
+            final_values = [run['final_value'] for run in self.runs_history]
+            stats['average_final_value'] = sum(final_values) / len(final_values)
+            stats['worst_final_value'] = max(final_values)
+            stats['best_final_value'] = min(final_values)
+            
+            # Summary improvements
+            improvements = [run['improvement'] for run in self.runs_history]
+            stats['average_improvement'] = sum(improvements) / len(improvements)
+            stats['best_improvement'] = max(improvements)
+        
+        return stats
+    
+    def print_results(self, verbose: bool = True):
+        """Print hasil dengan detail lengkap termasuk per-restart info"""
+        if verbose:
+            from src.utils.visualizer import ResultVisualizer
+            
+            print("\n" + "="*80)
+            print(f"RESULTS - {self.get_name()}")
+            print("="*80)
+            
+            # ===== STATE AWAL (first restart) =====
+            print("\n" + "─"*80)
+            print(">>> INITIAL STATE (First Restart)")
+            print("─"*80)
+            ResultVisualizer.visualize_containers_ascii(self.initial_state, "Initial State")
+            if len(self.runs_history) > 0:
+                print(f"\n➤ Initial Objective (First Restart): {self.runs_history[0]['initial_value']:.2f}")
+            
+            # ===== STATE AKHIR (best overall) =====
+            print("\n" + "─"*80)
+            print(">>> FINAL STATE (Best Overall)")
+            print("─"*80)
+            ResultVisualizer.visualize_containers_ascii(self.best_state_overall, "Final State")
+            print(f"\n➤ Final Objective (Best): {self.best_value_overall:.2f}")
+            print(f"➤ Final Containers: {self.best_state_overall.num_containers()}")
+            print(f"➤ Valid Solution: {'✓ YES' if self.best_state_overall.is_valid() else '✗ NO'}")
+            
+            # ===== PER-RESTART SUMMARY =====
+            print("\n" + "─"*80)
+            print(">>> PER-RESTART SUMMARY")
+            print("─"*80)
+            for run in self.runs_history:
+                print(f"Restart {run['restart']}: "
+                      f"Initial={run['initial_value']:.2f} → "
+                      f"Final={run['final_value']:.2f} "
+                      f"(Improvement: {run['improvement']:.2f}, "
+                      f"Iterations: {run['iterations']})")
+        
+        # ===== STATISTICS =====
+        print("\n" + "─"*80)
+        print(">>> STATISTICS")
+        print("─"*80)
+        print(f"➤ Algorithm: {self.get_name()}")
+        print(f"➤ Duration: {self.duration:.4f} seconds")
+        print(f"➤ Total Restarts Executed: {len(self.runs_history)}")
+        print(f"➤ Maximum Restarts: {self.max_restarts}")
+        print(f"➤ Best Objective (Overall): {self.best_value_overall:.2f}")
+        
+        # Summary iterasi
+        if len(self.runs_history) > 0:
+            total_iters = sum(run['iterations'] for run in self.runs_history)
+            avg_iter = total_iters / len(self.runs_history)
+            min_iter = min(run['iterations'] for run in self.runs_history)
+            max_iter = max(run['iterations'] for run in self.runs_history)
+            
+            print(f"➤ Total Iterations (All Runs): {total_iters}")
+            print(f"➤ Average Iterations per Run: {avg_iter:.2f}")
+            print(f"➤ Iterations Range: {min_iter} - {max_iter}")
+            
+            # Summary improvement
+            avg_improvement = sum(run['improvement'] for run in self.runs_history) / len(self.runs_history)
+            best_improvement = max(run['improvement'] for run in self.runs_history)
+            print(f"➤ Average Improvement per Run: {avg_improvement:.2f}")
+            print(f"➤ Best Improvement (Single Run): {best_improvement:.2f}")
+        
+        if verbose:
+            print("\n" + "="*80)
+
+    def get_result_dict(self) -> dict:
+        """
+        Get result dictionary dengan data comprehensive.
+        
+        Returns:
+            dict: Result dictionary
+        """
+        result = super().get_result_dict()
+        
+        # runs_history untuk plotting
+        result['runs_history'] = self.runs_history
+        
+        # Update algorithm name dengan parameter
+        result['algorithm'] = f"{self.get_name()} (restarts={self.max_restarts})"
+        
+        return result
+    
 # Demo
 def demo_hill_climbing():
     """Demo penggunaan Hill Climbing variants"""
@@ -307,6 +734,17 @@ def demo_hill_climbing():
     hc3.solve()
     hc3.print_results(verbose=True)
 
+    # 4. Random Restart
+    print("\n4. Random Restart Hill Climbing")
+    print("-" * 60)
+    hc4 = RandomRestartHillClimbing(
+        items, capacity, obj_func, 
+        max_restarts=5, 
+        max_iterations_per_run=50,
+        seed=42
+    )
+    hc4.solve()
+    hc4.print_results(verbose=True)  
 
 # if __name__ == "__main__":
 #     demo_hill_climbing()

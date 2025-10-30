@@ -87,7 +87,7 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
     def crossover(self, parents):
         parent_1 = parents[0]
         parent_2 = parents[1]
-        # Step 1: Gabungkan semua item dari kedua parent
+        # Gabungkan semua item dari kedua parent
         items_in_p1 = [item for container in parent_1.containers for item in container]
         items_in_p2 = [item for container in parent_2.containers for item in container]
         combined_items = list(dict.fromkeys(items_in_p1 + items_in_p2))  # urut, unik
@@ -144,7 +144,7 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
                 selected_item = containers[random_index][move]
                 item_weight = self.items[selected_item]
 
-                # Cari semua container yang cukup kapasitasnya (kecuali asal)
+                # Cari semua container yang cukup kapasitasnya
                 valid_targets = []
                 for i, c in enumerate(containers):
                     if i == random_index:
@@ -157,9 +157,7 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
                 if valid_targets:
                     random_container = random.choice(valid_targets)
                 else:
-                    # Kalau tidak ada yang cukup, buat container baru
-                    containers.append([])
-                    random_container = len(containers) - 1
+                    return new_state
 
                 # Pindah item
                 containers[random_index].remove(selected_item)
@@ -180,9 +178,7 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
                     if valid_targets:
                         move = random.choice(valid_targets)
                     else:
-                        # Kalau tidak ada yang cukup, buat container baru
-                        containers.append([])
-                        move = len(containers) - 1
+                        return new_state
                     containers[move].append(item)
 
             # Bersihkan container kosong

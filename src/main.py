@@ -17,7 +17,8 @@ from core.initializer import BinPackingInitializer
 from algorithms.hill_climbing import (
     SteepestAscentHillClimbing,
     StochasticHillClimbing,
-    SidewaysMoveHillClimbing
+    SidewaysMoveHillClimbing,
+    RandomRestartHillClimbing
 )
 from algorithms.simulated_annealing import SimulatedAnnealing
 from algorithms.genetic_algorithm import GeneticAlgorithm
@@ -46,8 +47,9 @@ def print_algorithm_menu():
     print("│  1. Steepest Ascent Hill Climbing" + " " * 34 + "│")
     print("│  2. Stochastic Hill Climbing" + " " * 39 + "│")
     print("│  3. Sideways Move Hill Climbing" + " " * 36 + "│")
-    print("│  4. Simulated Annealing" + " " * 44 + "│")
-    print("│  5. Genetic Algorithm" + " " * 46 + "│")
+    print("│  4. Random Restart Hill Climbing" + " " * 35 + "│")
+    print("│  5. Simulated Annealing" + " " * 44 + "│")
+    print("│  6. Genetic Algorithm" + " " * 46 + "│")
     print("├" + "─" * 68 + "┤")
     print("│  Type 'EXIT' to quit the program" + " " * 35 + "│")
     print("└" + "─" * 68 + "┘\n")
@@ -64,8 +66,9 @@ def get_algorithm_choice():
         '1': 'steepest',
         '2': 'stochastic',
         '3': 'sideways',
-        '4': 'sa',
-        '5': 'ga'
+        '4': 'restart',
+        '5': 'sa',
+        '6': 'ga'
     }
     
     while True:
@@ -99,11 +102,15 @@ def run_single_algorithm(algo_class, initial_state, obj_func, output_dir=None, p
     
     with Timer(verbose=True):
         algorithm.solve()
-    
     algorithm.print_results(verbose=False)
     
     # Get result dict
     result = algorithm.get_result_dict()
+    if 'history' not in result and hasattr(algorithm, 'history'):
+        result['history'] = algorithm.history
+    
+    if 'statistics' not in result and hasattr(algorithm, 'get_statistics'):
+        result['statistics'] = algorithm.get_statistics()
     if 'ga_metrics' in result:
         print()
         print(f"--- Genetic Algorithm Hyperparameters ---")
@@ -144,14 +151,37 @@ def run_single_algorithm(algo_class, initial_state, obj_func, output_dir=None, p
             accept_plot_path = os.path.join(plot_dir, f"{algo_name_safe}_acceptance_prob.png")
             ResultVisualizer.plot_sa_acceptance_probability(result, save_path=accept_plot_path)
             print(f"  ✓ Acceptance probability: {accept_plot_path}")
-
         
         elif isinstance(algorithm, GeneticAlgorithm):
             # GA Progression
             prog_plot_path = os.path.join(plot_dir, f"{algo_name_safe}_progression.png")
             ResultVisualizer.plot_ga_progression(result, save_path=prog_plot_path)
             print(f"  ✓ GA progression: {prog_plot_path}")
-    
+
+         #  Hill Climbing variants (termasuk Random Restart)
+        elif any(isinstance(algorithm, cls) for cls in [
+            SteepestAscentHillClimbing, 
+            StochasticHillClimbing, 
+            SidewaysMoveHillClimbing,
+            RandomRestartHillClimbing
+        ]):
+            # Hill Climbing Progress Plot
+            hc_plot_path = os.path.join(plot_dir, f"{algo_name_safe}_progress.png")
+            
+            stats = result.get('statistics', {})
+            hist = result.get('history', [])
+            
+            if hist and len(hist) > 0:
+                ResultVisualizer.plot_hill_climbing_progress(
+                    algorithm_stats=stats,
+                    history=hist,
+                    title=f"{result['algorithm']} - Objective Function Progress",
+                    save_path=hc_plot_path
+                )
+                print(f"  ✓ HC progress: {hc_plot_path}")
+            else:
+                print(f" No history data for HC plot")
+   
     return result
 
 
@@ -188,6 +218,15 @@ def run_single_experiment(algorithm_code: str, initial_state: State, obj_func: O
         algo_class = SidewaysMoveHillClimbing
         kwargs = {"max_iterations": 1000, "max_sideways_moves": 100}
     
+    elif algorithm_code == 'restart':
+        algo_name = "Random Restart Hill Climbing"
+        algo_class = RandomRestartHillClimbing
+        kwargs = {
+            "max_iterations": 1000,
+            "max_restarts": 5,
+            "base_algorithm": "steepest"  # Bisa 'steepest', 'stochastic', atau 'sideways'
+        }
+
     elif algorithm_code == 'sa':
         algo_name = "Simulated Annealing"
         algo_class = SimulatedAnnealing
@@ -235,6 +274,19 @@ def run_single_experiment(algorithm_code: str, initial_state: State, obj_func: O
             final_state,
             f"Final State - {algo_name}"
         )
+        # Show improvement untuk Random Restart
+        if isinstance(algo_class, type) and issubclass(algo_class, RandomRestartHillClimbing):
+            stats = result.get('statistics', {})
+            if 'total_restarts_executed' in stats:
+                print(f"   Total restarts: {stats['total_restarts_executed']}")
+                print(f"   Average iterations per run: {stats.get('average_iterations_per_run', 0):.2f}")
+        
+        print(f"\n📦 Final State Detail:")
+        ResultVisualizer.visualize_containers_ascii(
+            final_state,
+            f"Final State - {algo_name}"
+        )
+    print('-'*70)
     print('-'*70)
     
     # Save result
@@ -287,7 +339,7 @@ def run_interactive(input_file: str, output_dir: str = "./output"):
     
     ResultVisualizer.visualize_containers_ascii(initial_state, "Initial State")
     
-    # Interactive loop
+     # Interactive loop
     while True:
         print_algorithm_menu()
         choice = get_algorithm_choice()
@@ -297,7 +349,7 @@ def run_interactive(input_file: str, output_dir: str = "./output"):
             print("Thank you for using Bin Packing Solver!")
             print("=" * 70 + "\n")
             break
-        
+
         # Run selected algorithm
         try:
             run_single_experiment(choice, initial_state, obj_func, items, capacity, output_dir)
