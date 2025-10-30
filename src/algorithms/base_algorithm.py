@@ -1,10 +1,5 @@
 """
-base_algorithm.py - Base class untuk semua algoritma local search
-
-Menyediakan interface yang konsisten untuk semua algoritma:
-- Hill Climbing (Steepest Ascent, Stochastic, Sideways Move, Random Restart)
-- Simulated Annealing
-- Genetic Algorithm
+Base class untuk semua algoritma local search
 """
 
 from abc import ABC, abstractmethod
@@ -15,18 +10,18 @@ class BaseLocalSearchAlgorithm(ABC):
     """
     Abstract base class untuk semua algoritma local search.
     
-    Setiap algoritma yang inherit dari class ini harus implement:
+    Method:
     - solve(): Main algorithm logic
     - get_name(): Return nama algoritma
     
-    Attributes yang tersedia:
+    Attributes:
     - initial_state: State awal
     - current_state: State saat ini
     - best_state: State terbaik yang pernah ditemukan
     - objective_function: Fungsi untuk evaluasi state
     - history: List nilai objektif setiap iterasi
     - iteration_count: Jumlah iterasi yang sudah dilakukan
-    - duration: Waktu eksekusi (diisi setelah solve())
+    - duration: Waktu eksekusi
     """
     
     def __init__(self, initial_state, objective_function):
@@ -41,7 +36,7 @@ class BaseLocalSearchAlgorithm(ABC):
         self.objective_function = objective_function
         
         # Statistics
-        self.history = []  # History nilai objektif per iterasi
+        self.history = [] 
         self.iteration_count = 0
         self.duration = 0.0
         
@@ -58,7 +53,7 @@ class BaseLocalSearchAlgorithm(ABC):
         Returns:
             State: State terbaik yang ditemukan
         """
-        pass
+        return self.best_state
     
     @abstractmethod
     def get_name(self) -> str:
@@ -82,8 +77,7 @@ class BaseLocalSearchAlgorithm(ABC):
     
     def get_statistics(self) -> dict:
         """
-        Return statistik lengkap dari eksekusi algoritma.
-        Berguna untuk analisis dan visualisasi.
+        Statistik lengkap dari eksekusi algoritma.
         """
         return {
             "algorithm": self.get_name(),
@@ -130,6 +124,7 @@ class BaseLocalSearchAlgorithm(ABC):
     def get_result_dict(self) -> dict:
         """
         Return hasil dalam format dictionary untuk export ke JSON.
+        State object di-convert ke dict agar bisa di-serialize ke JSON.
         """
         stats = self.get_statistics()
         
@@ -153,7 +148,7 @@ class BaseLocalSearchAlgorithm(ABC):
                 "containers": self.best_state.to_dict()
             },
             "history": stats['history'],
-            "final_state": self.best_state
+            "_final_state_object": self.best_state
         }
 
 
@@ -209,27 +204,3 @@ class HillClimbingBase(BaseLocalSearchAlgorithm):
         stats = super().get_statistics()
         stats['max_iterations'] = self.max_iterations
         return stats
-
-
-# Demo
-def demo_base_algorithm():
-    """Demo struktur base algorithm"""
-    from core.state import State
-    from core.objective_function import ObjectiveFunction
-    from core.initializer import BinPackingInitializer
-    
-    # Setup
-    items = {"BRG001": 40, "BRG002": 55, "BRG003": 25, "BRG004": 60}
-    capacity = 100
-    
-    initial_state = BinPackingInitializer.best_fit(items, capacity)
-    obj_func = ObjectiveFunction()
-    
-    # Contoh menggunakan base class (biasanya tidak langsung dipakai)
-    print("Initial State:")
-    print(initial_state)
-    print(f"Objective Value: {obj_func.calculate(initial_state):.2f}")
-
-
-if __name__ == "__main__":
-    demo_base_algorithm()

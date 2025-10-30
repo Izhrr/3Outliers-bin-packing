@@ -1,7 +1,5 @@
 """
-timer.py - Utility untuk mengukur waktu eksekusi algoritma
-
-Menyediakan context manager untuk pengukuran waktu yang mudah dan akurat.
+Utility untuk mengukur waktu eksekusi algoritma
 """
 
 import time
@@ -146,41 +144,3 @@ class PerformanceMonitor:
         """Reset semua metrics"""
         self.metrics = {}
         self.timers = {}
-
-
-# Demo penggunaan
-def demo_timer():
-    """Demo penggunaan Timer dan PerformanceMonitor"""
-    import random
-    
-    print("Demo Timer - Simple Usage")
-    print("-" * 40)
-    
-    # Simple timer
-    with Timer(name="Example Operation", verbose=True) as t:
-        # Simulasi operasi
-        time.sleep(0.1)
-    
-    print(f"Duration: {t.get_duration_str()}\n")
-    
-    # Performance Monitor
-    print("Demo PerformanceMonitor - Multiple Operations")
-    print("-" * 40)
-    
-    monitor = PerformanceMonitor()
-    
-    # Simulasi multiple operations
-    for i in range(5):
-        monitor.start_timer("operation_A")
-        time.sleep(random.uniform(0.01, 0.05))
-        monitor.stop_timer("operation_A")
-        
-        monitor.start_timer("operation_B")
-        time.sleep(random.uniform(0.02, 0.08))
-        monitor.stop_timer("operation_B")
-    
-    monitor.print_summary()
-
-
-if __name__ == "__main__":
-    demo_timer()

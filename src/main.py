@@ -1,10 +1,6 @@
 """
-main.py - Entry point untuk menjalankan program Bin Packing Local Search
-
 Usage:
-    python main.py --input data/input/sample.json --algorithm all
-    python main.py --input data/input/sample.json --algorithm hc
-    python main.py --demo
+    python src/main.py --input <file directory>
 """
 
 import argparse
@@ -13,7 +9,6 @@ import os
 from typing import List
 from datetime import datetime
 
-# Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from core.state import State
@@ -24,28 +19,242 @@ from algorithms.hill_climbing import (
     StochasticHillClimbing,
     SidewaysMoveHillClimbing
 )
+from algorithms.simulated_annealing import SimulatedAnnealing
 from algorithms.genetic_algorithm import GeneticAlgorithm
 from utils.file_handler import FileHandler
 from utils.visualizer import ResultVisualizer
 from utils.timer import Timer
 
 
-def run_single_algorithm(algo_class, initial_state, obj_func, **kwargs):
+def print_welcome():
+    """Print welcome banner"""
+    print("\n" + "=" * 70)
+    print("█" * 70)
+    print("█" + " " * 68 + "█")
+    print("█" + " " * 15 + "WELCOME TO BIN PACKING SOLVER" + " " * 24 + "█")
+    print("█" + " " * 10 + "Local Search Algorithms for Optimization" + " " * 18 + "█")
+    print("█" + " " * 68 + "█")
+    print("█" * 70)
+    print("=" * 70 + "\n")
+
+
+def print_algorithm_menu():
+    """Print algorithm selection menu"""
+    print("\n" + "┌" + "─" * 68 + "┐")
+    print("│" + " " * 20 + "SELECT AN ALGORITHM" + " " * 29 + "│")
+    print("├" + "─" * 68 + "┤")
+    print("│  1. Steepest Ascent Hill Climbing" + " " * 34 + "│")
+    print("│  2. Stochastic Hill Climbing" + " " * 39 + "│")
+    print("│  3. Sideways Move Hill Climbing" + " " * 36 + "│")
+    print("│  4. Simulated Annealing" + " " * 44 + "│")
+    print("│  5. Genetic Algorithm" + " " * 46 + "│")
+    print("├" + "─" * 68 + "┤")
+    print("│  Type 'EXIT' to quit the program" + " " * 35 + "│")
+    print("└" + "─" * 68 + "┘\n")
+
+
+def get_algorithm_choice():
+    """
+    Get algorithm choice from user.
+    
+    Returns:
+        str: Algorithm code ('steepest', 'stochastic', etc.) or 'exit'
+    """
+    algorithm_map = {
+        '1': 'steepest',
+        '2': 'stochastic',
+        '3': 'sideways',
+        '4': 'sa',
+        '5': 'ga'
+    }
+    
+    while True:
+        choice = input("Enter your choice (1-5 or EXIT): ").strip()
+        
+        if choice.upper() == 'EXIT':
+            return 'exit'
+        
+        if choice in algorithm_map:
+            return algorithm_map[choice]
+        
+        # Invalid input
+        print("Invalid input! Please enter a number between 1-5 or type EXIT.\n")
+
+
+def run_single_algorithm(algo_class, initial_state, obj_func, output_dir=None, plot_dir=None, **kwargs):
+    """    
+    Args:
+        algo_class: Class algoritma
+        initial_state: State awal
+        obj_func: ObjectiveFunction
+        output_dir: Directory untuk save SA metrics (khusus SA)
+        plot_dir: Directory untuk save plots
+        **kwargs: Parameter untuk algoritma
+    
+    Returns:
+        dict: Result dictionary dengan '_final_state_object' (kebutuhan visualisasi)
+    """
     print(f"\nRunning {algo_class.__name__}...")
     algorithm = algo_class(initial_state, obj_func, **kwargs)
+    
     with Timer(verbose=True):
         algorithm.solve()
-    algorithm.print_results(verbose=False)
-    return algorithm.get_result_dict()
-
-
-def run_experiment(input_file: str, algorithms: List[str], output_dir: str = "./output"):
-    print("=" * 70)
-    print("BIN PACKING PROBLEM - LOCAL SEARCH SOLVER")
-    print("=" * 70)
     
-    # 1. Read input
-    print(f"\n📁 Reading input from: {input_file}")
+    algorithm.print_results(verbose=False)
+    
+    # Get result dict
+    result = algorithm.get_result_dict()
+    
+    # Simulated Annealing (nambahin print stuck count + accepted worse)
+    if isinstance(algorithm, SimulatedAnnealing) and output_dir:
+        print(f"\n📊 Saving SA-specific metrics...")
+        algorithm.save_sa_metrics(output_dir)
+        print(f"\n--- Simulated Annealing Additional Performance ---")
+        print(f"  Stuck count: {algorithm.stuck_count}")
+        print(f"  Accepted worse: {algorithm.accepted_worse_count}")
+    
+    # Generate plots jika plot_dir disediakan
+    if plot_dir:
+        os.makedirs(plot_dir, exist_ok=True)
+        algo_name_safe = result['algorithm'].replace(' ', '_').replace('(', '').replace(')', '').replace('=', '').replace(',', '').replace('.', '')
+        
+        print(f"\n📈 Generating plots...")
+        
+        # 1. Plot objective history
+        obj_plot_path = os.path.join(plot_dir, f"{algo_name_safe}_objective.png")
+        ResultVisualizer.plot_single_objective_history(result, save_path=obj_plot_path)
+        print(f"  ✓ Objective history: {obj_plot_path}")
+        
+        # 2. Algorithm-specific plots
+        if isinstance(algorithm, SimulatedAnnealing):
+            # SA Acceptance Probability
+            accept_plot_path = os.path.join(plot_dir, f"{algo_name_safe}_acceptance_prob.png")
+            ResultVisualizer.plot_sa_acceptance_probability(result, save_path=accept_plot_path)
+            print(f"  ✓ Acceptance probability: {accept_plot_path}")
+
+        
+        elif isinstance(algorithm, GeneticAlgorithm):
+            # GA Progression
+            prog_plot_path = os.path.join(plot_dir, f"{algo_name_safe}_progression.png")
+            ResultVisualizer.plot_ga_progression(result, save_path=prog_plot_path)
+            print(f"  ✓ GA progression: {prog_plot_path}")
+    
+    return result
+
+
+def run_single_experiment(algorithm_code: str, initial_state: State, obj_func: ObjectiveFunction, 
+                         items: dict, capacity: int, output_dir: str = "./output"):
+    """
+    Run a single algorithm experiment.
+    
+    Args:
+        algorithm_code: Code for algorithm
+        initial_state: Initial state
+        obj_func: Objective function
+        items: Items dict
+        capacity: Container capacity
+        output_dir: Output directory
+    """
+    # Setup algorithm
+    algo_class = None
+    algo_name = ""
+    kwargs = {}
+    
+    if algorithm_code == 'steepest':
+        algo_name = "Steepest Ascent Hill Climbing"
+        algo_class = SteepestAscentHillClimbing
+        kwargs = {"max_iterations": 1000}
+    
+    elif algorithm_code == 'stochastic':
+        algo_name = "Stochastic Hill Climbing"
+        algo_class = StochasticHillClimbing
+        kwargs = {"max_iterations": 1000, "seed": 42}
+    
+    elif algorithm_code == 'sideways':
+        algo_name = "Sideways Move Hill Climbing"
+        algo_class = SidewaysMoveHillClimbing
+        kwargs = {"max_iterations": 1000, "max_sideways_moves": 100}
+    
+    elif algorithm_code == 'sa':
+        algo_name = "Simulated Annealing"
+        algo_class = SimulatedAnnealing
+        kwargs = {
+            "max_iterations": 20000,
+            "initial_temp": 1000,
+            "cooling_rate": 0.99
+        }
+    
+    elif algorithm_code == 'ga':
+        algo_name = "Genetic Algorithm"
+        algo_class = GeneticAlgorithm
+        kwargs = {
+            "items": items,
+            "capacity": capacity,
+            "mutation_probability": 0.5,
+            "population_size": 50,
+            "max_iterations": 1000
+        }
+    
+    # Run algorithm
+    print(f"\n{'='*70}\nRunning: {algo_name}\n{'='*70}")
+    
+    # Setup directories
+    algo_output_dir = None
+    if algo_class == SimulatedAnnealing:
+        algo_output_dir = os.path.join(output_dir, 'sa_metrics')
+    
+    plot_dir = os.path.join(output_dir, 'plots')
+    
+    result = run_single_algorithm(
+        algo_class,
+        initial_state,
+        obj_func,
+        output_dir=algo_output_dir,
+        plot_dir=plot_dir,
+        **kwargs
+    )
+    
+    # Visualize final state
+    final_state = result.get('_final_state_object', None)
+    if final_state:
+        print(f"\nJumlah kontainer akhir: {final_state.num_containers()}")
+        ResultVisualizer.visualize_containers_ascii(
+            final_state,
+            f"Final State - {algo_name}"
+        )
+    print('-'*70)
+    
+    # Save result
+    print(f"\nSaving results...")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # Clean result for JSON
+    result_copy = result.copy()
+    result_copy.pop('_final_state_object', None)
+    
+    FileHandler.write_results(
+        [result_copy],
+        f"{output_dir}/results_{algo_name.replace(' ', '_')}_{timestamp}.json",
+        metadata={
+            'capacity': capacity,
+            'num_items': len(items)
+        }
+    )
+
+
+def run_interactive(input_file: str, output_dir: str = "./output"):
+    """
+    Run interactive mode - memilih algoritma satu per satu.
+    
+    Args:
+        input_file: Path to input JSON file
+        output_dir: Output directory
+    """
+    # Print welcome banner
+    print_welcome()
+    
+    # Read input once
+    print(f"Reading input from: {input_file}\n")
     input_data = FileHandler.read_input(input_file)
     
     capacity = input_data['capacity']
@@ -56,9 +265,8 @@ def run_experiment(input_file: str, algorithms: List[str], output_dir: str = "./
     print(f"   Total size: {sum(items.values())}")
     print(f"   Theoretical minimum containers: {sum(items.values()) / capacity:.2f}")
     
-    # 2. Initialize
-    print(f"\n🔧 Initializing with Best Fit...")
-    initial_state = BinPackingInitializer.worst_fit(items, capacity)
+    # Initialize once
+    initial_state = BinPackingInitializer.next_fit(items, capacity)
     obj_func = ObjectiveFunction()
     
     print(f"   Initial containers: {initial_state.num_containers()}")
@@ -66,105 +274,28 @@ def run_experiment(input_file: str, algorithms: List[str], output_dir: str = "./
     
     ResultVisualizer.visualize_containers_ascii(initial_state, "Initial State")
     
-    # 3. Run algorithms
-    print(f"\n🚀 Running algorithms...")
-    results = []
-    algo_list = []
-    if 'steepest' in algorithms or 'all' in algorithms:
-        algo_list.append(("Steepest Ascent Hill Climbing", SteepestAscentHillClimbing, {"max_iterations": 1000}))
-    if 'stochastic' in algorithms or 'all' in algorithms:
-        algo_list.append(("Stochastic Hill Climbing", StochasticHillClimbing, {"max_iterations": 1000, "seed": 42}))
-    if 'sideways' in algorithms or 'all' in algorithms:
-        algo_list.append(("Sideways Move Hill Climbing", SidewaysMoveHillClimbing, {"max_iterations": 1000, "max_sideways_moves": 100}))
-    if 'ga' in algorithms or 'all' in algorithms:
-        algo_list.append(("Genetic", GeneticAlgorithm, {"items": items,"capacity": capacity,"mutation_probability":0.5, "population_size":50, "max_iterations":1000}))
-    #if simulated annealing 
-
-    for algo_name, algo_class, kwargs in algo_list:
-        print(f"\n{'='*70}\nAlgoritma: {algo_name}\n{'='*70}")
-        result = run_single_algorithm(
-            algo_class,
-            initial_state,
-            obj_func,
-            **kwargs
-        )
-        results.append(result)
-
-        # Ambil state akhir
-        final_state = result.get('final_state', None)
-        if final_state is None:
-            print("Tidak ada state akhir yang tersedia.")
-            continue
-
-        print(f"Jumlah kontainer akhir: {final_state.num_containers()}")
-        print(f"Detail isi setiap kontainer:")
-        ResultVisualizer.visualize_containers_ascii(final_state, f"Final State Algoritma {algo_name}")
-        print('-'*70)
-
-        if algo_name.lower().startswith("genetic"):
-            generations_data = result.get('genetic_params', {}).get('generations_data', None)
-            if generations_data:
-                ResultVisualizer.plot_genetic_progression(generations_data)
-        # Yang lain, kosongkan saja
-        elif algo_name.lower().startswith("steepest") or algo_name.lower().startswith("stochastic") or algo_name.lower().startswith("sideways"):
-            pass
-        elif algo_name.lower().startswith("simulated"):
-            pass
-
-
-    # 4. Visualize results
-    # print(f"\n📊 Generating visualizations...")
-    # ResultVisualizer.create_experiment_report(results, output_dir)
-    
-    # 5. Save results
-    print(f"\n💾 Saving results...")
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    
-    # FileHandler.write_results(
-    #     results,
-    #     f"{output_dir}/results_{timestamp}.json",
-    #     metadata={
-    #         'input_file': input_file,
-    #         'capacity': capacity,
-    #         'num_items': len(items)
-    #     }
-    # )
-    
-    # FileHandler.export_csv(
-    #     results,
-    #     f"{output_dir}/results_{timestamp}.csv"
-    # )
-    
-    print(f"\n✅ Experiment completed!")
-    print(f"   Results saved to: {output_dir}/")
-
-
-def run_demo():
-    """Run demo dengan sample data"""
-    print("=" * 70)
-    print("DEMO MODE - Bin Packing Local Search")
-    print("=" * 70)
-    
-    # Create sample input
-    sample_file = "./data/input/sample_xlarge.json"
-    os.makedirs("./data/input", exist_ok=True)
-    
-    print("\n📝 Creating sample input...")
-    FileHandler.create_sample_input(
-        sample_file,
-        num_items=10,
-        capacity=100,
-        min_size=20,
-        max_size=70
-    )
-    
-    # Run experiment
-    run_experiment(
-        sample_file,
-        algorithms=['all'],
-        output_dir="./output/demo"
-    )
-
+    # Interactive loop
+    while True:
+        print_algorithm_menu()
+        choice = get_algorithm_choice()
+        
+        if choice == 'exit':
+            print("\n" + "=" * 70)
+            print("Thank you for using Bin Packing Solver!")
+            print("=" * 70 + "\n")
+            break
+        
+        # Run selected algorithm
+        try:
+            run_single_experiment(choice, initial_state, obj_func, items, capacity, output_dir)
+        except Exception as e:
+            print(f"\nError running algorithm: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        # Ask if continue
+        print("\n" + "─" * 70)
+        input("Press ENTER to continue...")
 
 def main():
     """Main function"""
@@ -175,15 +306,16 @@ def main():
     parser.add_argument(
         '--input',
         type=str,
+        required=True,
         help='Path to input JSON file'
     )
     
     parser.add_argument(
         '--algorithm',
         type=str,
-        default='all',
-        choices=['all', 'steepest', 'stochastic', 'sideways', 'sa', 'ga'],
-        help='Algorithm to run (default: all)'
+        default='interactive',
+        choices=['interactive', 'all', 'steepest', 'stochastic', 'sideways', 'sa', 'ga'],
+        help='Algorithm to run (default: interactive mode)'
     )
     
     parser.add_argument(
@@ -193,39 +325,30 @@ def main():
         help='Output directory (default: ./output)'
     )
     
-    parser.add_argument(
-        '--demo',
-        action='store_true',
-        help='Run demo with sample data'
-    )
-    
     args = parser.parse_args()
     
     try:
-        if args.demo:
-            run_demo()
-        elif args.input:
-            algorithms = [args.algorithm] if args.algorithm != 'all' else ['all']
-            run_experiment(args.input, algorithms, args.output)
-        else:
-            parser.print_help()
-            print("\n⚠️  Error: Please provide --input or use --demo flag")
-            sys.exit(1)
+        # Interactive mode (default)
+        if args.algorithm == 'interactive':
+            run_interactive(args.input, args.output)
     
     except FileNotFoundError as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\nError: {e}")
         sys.exit(1)
     except ValueError as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\nError: {e}")
         sys.exit(1)
+    except KeyboardInterrupt:
+        print("\n\n" + "=" * 70)
+        print("Program interrupted by user")
+        print("=" * 70 + "\n")
+        sys.exit(0)
     except Exception as e:
-        print(f"\n❌ Unexpected error: {e}")
+        print(f"\nUnexpected error: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
 
 
 if __name__ == "__main__":
-    from datetime import datetime
-    from typing import List
     main()
