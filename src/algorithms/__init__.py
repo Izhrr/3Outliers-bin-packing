@@ -6,7 +6,8 @@ from .base_algorithm import BaseLocalSearchAlgorithm, HillClimbingBase
 from .hill_climbing import (
     SteepestAscentHillClimbing,
     StochasticHillClimbing,
-    SidewaysMoveHillClimbing
+    SidewaysMoveHillClimbing,
+    RandomRestartHillClimbing
 )
 
 __all__ = [
@@ -14,5 +15,6 @@ __all__ = [
     'HillClimbingBase',
     'SteepestAscentHillClimbing',
     'StochasticHillClimbing',
-    'SidewaysMoveHillClimbing'
+    'SidewaysMoveHillClimbing',
+    'RandomRestartHillClimbing'
 ]

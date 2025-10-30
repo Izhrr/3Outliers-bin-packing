@@ -22,7 +22,8 @@ from core.initializer import BinPackingInitializer
 from algorithms.hill_climbing import (
     SteepestAscentHillClimbing,
     StochasticHillClimbing,
-    SidewaysMoveHillClimbing
+    SidewaysMoveHillClimbing,
+    RandomRestartHillClimbing
 )
 from algorithms.genetic_algorithm import GeneticAlgorithm
 from utils.file_handler import FileHandler
@@ -34,9 +35,29 @@ def run_single_algorithm(algo_class, initial_state, obj_func, **kwargs):
     print(f"\nRunning {algo_class.__name__}...")
     algorithm = algo_class(initial_state, obj_func, **kwargs)
     with Timer(verbose=True):
+<<<<<<< HEAD
         algorithm.solve()
     algorithm.print_results(verbose=False)
     return algorithm.get_result_dict()
+=======
+        final_state = algorithm.solve()
+    algorithm.print_results(verbose=False)
+    result  = algorithm.get_result_dict()
+    # ENSURE semua data tersedia untuk visualisasi
+    if 'final_state' not in result:
+        result['final_state'] = final_state
+    
+    if 'initial_state' not in result:
+        result['initial_state'] = initial_state.copy()
+    
+    if 'history' not in result and hasattr(algorithm, 'history'):
+        result['history'] = algorithm.history
+    
+    if 'statistics' not in result and hasattr(algorithm, 'get_statistics'):
+        result['statistics'] = algorithm.get_statistics()
+    
+    return result
+>>>>>>> hill_climbing
 
 
 def run_experiment(input_file: str, algorithms: List[str], output_dir: str = "./output"):
@@ -106,8 +127,31 @@ def run_experiment(input_file: str, algorithms: List[str], output_dir: str = "./
             if generations_data:
                 ResultVisualizer.plot_genetic_progression(generations_data)
         # Yang lain, kosongkan saja
-        elif algo_name.lower().startswith("steepest") or algo_name.lower().startswith("stochastic") or algo_name.lower().startswith("sideways"):
-            pass
+        elif any(keyword in algo_name.lower() for keyword in ['steepest', 'stochastic', 'sideways', 'restart']):
+            print(f"\n>>> Generating Hill Climbing plot...")
+            
+            # Create save directory
+            viz_dir = os.path.join(output_dir, "visualizations", algo_name.replace(' ', '_'))
+            os.makedirs(viz_dir, exist_ok=True)
+            
+            # Get data from result
+            stats = result.get('statistics', {})
+            hist = result.get('history', [])
+            
+            if hist and len(hist) > 0:
+                # Generate clean filename
+                clean_name = algo_name.replace(' ', '_').replace('(', '').replace(')', '').replace('=', '')
+                save_path = os.path.join(viz_dir, f"{clean_name}_progress.png")
+                
+                # Call plot function from visualizer
+                ResultVisualizer.plot_hill_climbing_progress(
+                    algorithm_stats=stats,
+                    history=hist,
+                    title=f"{algo_name} - Objective Function Progress",
+                    save_path=save_path
+                )
+            else:
+                print("No history data available for plotting")
         elif algo_name.lower().startswith("simulated"):
             pass
 
