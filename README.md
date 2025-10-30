@@ -67,6 +67,14 @@ Input berupa file JSON dengan format:
 }
 ```
 
+## Pembagian Tugas Anggota Kelompok
+
+| NIM       | Nama                         | Kontribusi                                                                                                         |
+|-----------|------------------------------|--------------------------------------------------------------------------------------------------------------------|
+| 18223120  | Leonard Arif Sutiono         | Membuat README, Mengimplementasikan kode untuk algoritma Genetic Algorithm, Mendesain tampilan visual output state pada CLI, Mengintegrasikan data hasil output pada setiap algoritma ke main, Mengerjakan laporan bagian hasil dan pembahasan untuk Genetic Algorithm, saran, dan kesimpulan |
+| 18223129  | Izhar Alif Akbar             | Inisialisasi struktur kode, Membuat pipeline untuk integrasi keseluruhan kode, Mengimplementasikan kode untuk algoritma Simulated Annealing, Membantu mengimplementasikan kode untuk algoritma Hill-Climbing, Mendefinisikan objective function, Mengerjakan laporan bagian pendahuluan, hasil dan pembahasan untuk Simulated Annealing, kesimpulan, dan saran |
+| 18223136  | Geraldo Linggom Samuel T.    | Mengimplementasikan kode untuk algoritma Hill Climbing, Mengerjakan laporan bagian pendahuluan, hasil dan pembahasan untuk Hill Climbing, kesimpulan, dan saran |
+
 ## Kontribusi & Kembangkan
 - Fork repo ini dan buat branch untuk fitur/algoritma baru.
 - Pull request sangat diapresiasi!
@@ -74,4 +82,3 @@ Input berupa file JSON dengan format:
 
 ## Lisensi
 MIT License
-
