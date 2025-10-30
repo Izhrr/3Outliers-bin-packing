@@ -1,0 +1,536 @@
+{
+  "timestamp": "2025-10-30T20:28:00.592058",
+  "metadata": {
+    "capacity": 100,
+    "num_items": 100
+  },
+  "results": [
+    {
+      "algorithm": "Steepest Ascent Hill Climbing",
+      "execution": {
+        "duration_seconds": 50.2616749000008,
+        "duration_ms": 50261.6749000008,
+        "iterations": 37
+      },
+      "objective_function": {
+        "initial": 4672.034,
+        "final": 4664.91,
+        "improvement": 7.123999999999796,
+        "improvement_percent": 0.1524817670419307
+      },
+      "solution": {
+        "is_valid": true,
+        "num_containers_initial": 44,
+        "num_containers_final": 44,
+        "containers": {
+          "num_containers": 44,
+          "containers": [
+            {
+              "id": 1,
+              "items": [
+                "BRG001",
+                "BRG003",
+                "BRG041"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 2,
+              "items": [
+                "BRG059",
+                "BRG067"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 3,
+              "items": [
+                "BRG047",
+                "BRG091"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 4,
+              "items": [
+                "BRG010",
+                "BRG032",
+                "BRG094"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 5,
+              "items": [
+                "BRG011",
+                "BRG012"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 6,
+              "items": [
+                "BRG013",
+                "BRG050",
+                "BRG007"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 7,
+              "items": [
+                "BRG015",
+                "BRG009"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 8,
+              "items": [
+                "BRG018",
+                "BRG065"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 9,
+              "items": [
+                "BRG020",
+                "BRG026"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 10,
+              "items": [
+                "BRG096",
+                "BRG060",
+                "BRG017"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 11,
+              "items": [
+                "BRG024",
+                "BRG023"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 12,
+              "items": [
+                "BRG027",
+                "BRG019"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 13,
+              "items": [
+                "BRG016",
+                "BRG063",
+                "BRG061"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 14,
+              "items": [
+                "BRG031",
+                "BRG008"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 15,
+              "items": [
+                "BRG075",
+                "BRG082"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 16,
+              "items": [
+                "BRG036",
+                "BRG037"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 17,
+              "items": [
+                "BRG039",
+                "BRG068"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 18,
+              "items": [
+                "BRG040",
+                "BRG002"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 19,
+              "items": [
+                "BRG043",
+                "BRG055"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 20,
+              "items": [
+                "BRG084",
+                "BRG056"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 21,
+              "items": [
+                "BRG046",
+                "BRG035",
+                "BRG014"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 22,
+              "items": [
+                "BRG048",
+                "BRG049"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 23,
+              "items": [
+                "BRG051",
+                "BRG080"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 24,
+              "items": [
+                "BRG054",
+                "BRG042",
+                "BRG045"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 25,
+              "items": [
+                "BRG057",
+                "BRG097"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 26,
+              "items": [
+                "BRG025",
+                "BRG004",
+                "BRG030"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 27,
+              "items": [
+                "BRG062",
+                "BRG028"
+              ],
+              "load": 79,
+              "capacity": 100
+            },
+            {
+              "id": 28,
+              "items": [
+                "BRG064",
+                "BRG021"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 29,
+              "items": [
+                "BRG066",
+                "BRG034"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 30,
+              "items": [
+                "BRG069",
+                "BRG038"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 31,
+              "items": [
+                "BRG071",
+                "BRG077"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 32,
+              "items": [
+                "BRG074",
+                "BRG058",
+                "BRG089"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 33,
+              "items": [
+                "BRG076",
+                "BRG033"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 34,
+              "items": [
+                "BRG078",
+                "BRG070"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 35,
+              "items": [
+                "BRG079",
+                "BRG081",
+                "BRG053"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 36,
+              "items": [
+                "BRG083",
+                "BRG052",
+                "BRG022"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 37,
+              "items": [
+                "BRG044",
+                "BRG073"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 38,
+              "items": [
+                "BRG087",
+                "BRG088"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 39,
+              "items": [
+                "BRG090",
+                "BRG085"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 40,
+              "items": [
+                "BRG092",
+                "BRG006"
+              ],
+              "load": 79,
+              "capacity": 100
+            },
+            {
+              "id": 41,
+              "items": [
+                "BRG093",
+                "BRG029"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 42,
+              "items": [
+                "BRG095",
+                "BRG005"
+              ],
+              "load": 78,
+              "capacity": 100
+            },
+            {
+              "id": 43,
+              "items": [
+                "BRG098",
+                "BRG086",
+                "BRG072"
+              ],
+              "load": 77,
+              "capacity": 100
+            },
+            {
+              "id": 44,
+              "items": [
+                "BRG099",
+                "BRG100"
+              ],
+              "load": 78,
+              "capacity": 100
+            }
+          ]
+        }
+      },
+      "history": [
+        4672.034,
+        4671.114,
+        4670.304,
+        4669.62,
+        4668.94,
+        4668.342,
+        4667.894,
+        4667.446,
+        4667.134,
+        4666.822,
+        4666.51,
+        4666.202,
+        4665.9619999999995,
+        4665.794,
+        4665.662,
+        4665.53,
+        4665.402,
+        4665.294,
+        4665.1939999999995,
+        4665.134,
+        4665.094,
+        4665.062,
+        4665.038,
+        4665.02,
+        4665.002,
+        4664.986,
+        4664.974,
+        4664.9619999999995,
+        4664.95,
+        4664.942,
+        4664.934,
+        4664.9259999999995,
+        4664.922,
+        4664.918,
+        4664.916,
+        4664.914,
+        4664.912,
+        4664.91
+      ],
+      "statistics": {
+        "algorithm": "Steepest Ascent Hill Climbing",
+        "iterations": 37,
+        "duration": 50.2616749000008,
+        "duration_ms": 50261.6749000008,
+        "initial_objective": 4672.034,
+        "final_objective": 4664.91,
+        "improvement": 7.123999999999796,
+        "improvement_percent": 0.1524817670419307,
+        "num_containers_initial": 44,
+        "num_containers_final": 44,
+        "is_valid": true,
+        "history": [
+          4672.034,
+          4671.114,
+          4670.304,
+          4669.62,
+          4668.94,
+          4668.342,
+          4667.894,
+          4667.446,
+          4667.134,
+          4666.822,
+          4666.51,
+          4666.202,
+          4665.9619999999995,
+          4665.794,
+          4665.662,
+          4665.53,
+          4665.402,
+          4665.294,
+          4665.1939999999995,
+          4665.134,
+          4665.094,
+          4665.062,
+          4665.038,
+          4665.02,
+          4665.002,
+          4664.986,
+          4664.974,
+          4664.9619999999995,
+          4664.95,
+          4664.942,
+          4664.934,
+          4664.9259999999995,
+          4664.922,
+          4664.918,
+          4664.916,
+          4664.914,
+          4664.912,
+          4664.91
+        ],
+        "max_iterations": 1000,
+        "stuck_at_iteration": 37
+      }
+    }
+  ]
+}

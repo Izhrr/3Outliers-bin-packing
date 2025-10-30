@@ -102,7 +102,7 @@ def run_single_algorithm(algo_class, initial_state, obj_func, output_dir=None, p
     
     with Timer(verbose=True):
         algorithm.solve()
-    algorithm.print_results(verbose=False)
+    algorithm.print_results(verbose=True)
     
     # Get result dict
     result = algorithm.get_result_dict()
@@ -216,7 +216,7 @@ def run_single_experiment(algorithm_code: str, initial_state: State, obj_func: O
     elif algorithm_code == 'sideways':
         algo_name = "Sideways Move Hill Climbing"
         algo_class = SidewaysMoveHillClimbing
-        kwargs = {"max_iterations": 1000, "max_sideways_moves": 100}
+        kwargs = {"max_iterations": 100, "max_sideways_moves": 100}
     
     elif algorithm_code == 'restart':
         algo_name = "Random Restart Hill Climbing"
