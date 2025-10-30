@@ -146,12 +146,12 @@ class ResultVisualizer:
         
         plt.tight_layout()
     
-    # ===== SAVE DAN CLOSE =====
-    if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        print(f"   ✓ Objective history saved: {save_path}")
-    
-    plt.close()  
+        # ===== SAVE DAN CLOSE =====
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            print(f"   ✓ Objective history saved: {save_path}")
+
+        plt.close()  
 
     @staticmethod
     def plot_sa_acceptance_probability(result: Dict,
