@@ -1,6 +1,7 @@
 # 3Outliers Bin Packing
 
 <div align="center">
+  <br>
   <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/c39265b1-a855-476a-a195-9396ae330b89" />
 </div>
 
