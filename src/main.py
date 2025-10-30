@@ -35,11 +35,6 @@ def run_single_algorithm(algo_class, initial_state, obj_func, **kwargs):
     print(f"\nRunning {algo_class.__name__}...")
     algorithm = algo_class(initial_state, obj_func, **kwargs)
     with Timer(verbose=True):
-<<<<<<< HEAD
-        algorithm.solve()
-    algorithm.print_results(verbose=False)
-    return algorithm.get_result_dict()
-=======
         final_state = algorithm.solve()
     algorithm.print_results(verbose=False)
     result  = algorithm.get_result_dict()
@@ -57,7 +52,7 @@ def run_single_algorithm(algo_class, initial_state, obj_func, **kwargs):
         result['statistics'] = algorithm.get_statistics()
     
     return result
->>>>>>> hill_climbing
+
 
 
 def run_experiment(input_file: str, algorithms: List[str], output_dir: str = "./output"):
