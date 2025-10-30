@@ -1,4 +1,4 @@
-<img width="1000" height="1000" alt="image" src="https://github.com/user-attachments/assets/c3cb49a3-3c14-44ec-9202-355857b5affa" />
+<img width="540" height="428" alt="image" src="https://github.com/user-attachments/assets/d3f3dc66-ccd1-4516-a5b8-88114d878e67" />
 
 # 3Outliers Bin Packing
 
