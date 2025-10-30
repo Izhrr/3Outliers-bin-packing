@@ -72,7 +72,7 @@ def get_algorithm_choice():
     }
     
     while True:
-        choice = input("Enter your choice (1-5 or EXIT): ").strip()
+        choice = input("Enter your choice (1-6 or EXIT): ").strip()
         
         if choice.upper() == 'EXIT':
             return 'exit'
@@ -152,14 +152,14 @@ def run_single_algorithm(algo_class, initial_state, obj_func, output_dir=None, p
             ResultVisualizer.plot_sa_acceptance_probability(result, save_path=accept_plot_path)
             print(f"  ✓ Acceptance probability: {accept_plot_path}")
         
-        elif isinstance(algorithm, GeneticAlgorithm):
+        if isinstance(algorithm, GeneticAlgorithm):
             # GA Progression
             prog_plot_path = os.path.join(plot_dir, f"{algo_name_safe}_progression.png")
             ResultVisualizer.plot_ga_progression(result, save_path=prog_plot_path)
             print(f"  ✓ GA progression: {prog_plot_path}")
 
          #  Hill Climbing variants (termasuk Random Restart)
-        elif any(isinstance(algorithm, cls) for cls in [
+        if any(isinstance(algorithm, cls) for cls in [
             SteepestAscentHillClimbing, 
             StochasticHillClimbing, 
             SidewaysMoveHillClimbing,
@@ -222,9 +222,9 @@ def run_single_experiment(algorithm_code: str, initial_state: State, obj_func: O
         algo_name = "Random Restart Hill Climbing"
         algo_class = RandomRestartHillClimbing
         kwargs = {
-            "max_iterations": 1000,
             "max_restarts": 5,
-            "base_algorithm": "steepest"  # Bisa 'steepest', 'stochastic', atau 'sideways'
+            "base_algorithm": "steepest",
+            "base_max_iterations": 1000  
         }
 
     elif algorithm_code == 'sa':
@@ -269,11 +269,9 @@ def run_single_experiment(algorithm_code: str, initial_state: State, obj_func: O
     # Visualize final state
     final_state = result.get('_final_state_object', None)
     if final_state:
-        print(f"\nJumlah kontainer akhir: {final_state.num_containers()}")
-        ResultVisualizer.visualize_containers_ascii(
-            final_state,
-            f"Final State - {algo_name}"
-        )
+        print(f"\n📦 Final State Detail:")
+        print(f"Jumlah kontainer akhir: {final_state.num_containers()}")
+        
         # Show improvement untuk Random Restart
         if isinstance(algo_class, type) and issubclass(algo_class, RandomRestartHillClimbing):
             stats = result.get('statistics', {})
@@ -281,11 +279,12 @@ def run_single_experiment(algorithm_code: str, initial_state: State, obj_func: O
                 print(f"   Total restarts: {stats['total_restarts_executed']}")
                 print(f"   Average iterations per run: {stats.get('average_iterations_per_run', 0):.2f}")
         
-        print(f"\n📦 Final State Detail:")
+        # Visualisasi HANYA SEKALI
         ResultVisualizer.visualize_containers_ascii(
             final_state,
             f"Final State - {algo_name}"
         )
+    
     print('-'*70)
     print('-'*70)
     
@@ -379,7 +378,7 @@ def main():
         '--algorithm',
         type=str,
         default='interactive',
-        choices=['interactive', 'all', 'steepest', 'stochastic', 'sideways', 'sa', 'ga'],
+        choices=['interactive', 'all', 'steepest', 'stochastic', 'sideways', 'restart', 'sa', 'ga'],
         help='Algorithm to run (default: interactive mode)'
     )
     
