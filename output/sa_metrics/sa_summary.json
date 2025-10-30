@@ -1,0 +1,20 @@
+{
+  "algorithm": "Simulated Annealing",
+  "parameters": {
+    "initial_temperature": 1000,
+    "cooling_rate": 0.99,
+    "max_iterations": 10000
+  },
+  "results": {
+    "stuck_count": 937,
+    "accepted_worse_count": 93,
+    "final_temperature": 2.2714897472891795e-41,
+    "initial_objective": 4672.034,
+    "final_objective": 4384.31,
+    "improvement": 287.72399999999925,
+    "improvement_percent": 6.158431210046829,
+    "num_containers_initial": 44,
+    "num_containers_final": 41,
+    "duration": 2.8127767999540083
+  }
+}

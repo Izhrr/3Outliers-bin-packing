@@ -24,13 +24,16 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
     def get_result_dict(self):
         stats = super().get_statistics()
         result = super().get_result_dict()
-        result['genetic_params'] = {
+        result['ga_metrics'] = {
             "population_size": self.population_size,
             "mutation_probability": self.mutation_probability,
             "max_iterations": self.max_iterations,
-            'generations_data': self.generations_data,
+            "generations_data": self.generations_data,
+            "mutation_rate": self.mutation_probability,
+            "population_size" : self.population_size
+
         }
-        result["final_state"] = self.best_state
+        result["_final_state_object"] = self.best_state
         return result
 
     def initialize_population(self):
@@ -39,17 +42,9 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
             initial_state_choice = random.randint(1,2)
             if initial_state_choice == 1:
                 state = BinPackingInitializer.best_fit(self.items, self.capacity)
-            # elif initial_state_choice == 2:
-            #     state = BinPackingInitializer.first_fit(self.items, self.capacity)
-            # elif initial_state_choice == 3:
-            #     state = BinPackingInitializer.worst_fit(self.items, self.capacity)
-            # elif initial_state_choice == 4:
-            #     state = BinPackingInitializer.next_fit(self.items, self.capacity)
-            # elif initial_state_choice == 5:
-            #     state = BinPackingInitializer.random_fit(self.items, self.capacity, seed=i)
             elif initial_state_choice == 2:
                 state = BinPackingInitializer.greedy_fit(self.items, self.capacity)
-
+                
             # if initial_state_choice == 1:
             #     state = BinPackingInitializer.best_fit(self.items, self.capacity)
             # elif initial_state_choice == 2:
@@ -257,6 +252,7 @@ class GeneticAlgorithm(BaseLocalSearchAlgorithm):
             self.best_value = initial_value
 
         return self.best_state, self.duration
+    
     
 # def run_genetic_demo():
 #     # Setup problem

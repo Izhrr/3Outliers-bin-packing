@@ -104,6 +104,18 @@ def run_single_algorithm(algo_class, initial_state, obj_func, output_dir=None, p
     
     # Get result dict
     result = algorithm.get_result_dict()
+    if 'ga_metrics' in result:
+        print()
+        print(f"--- Genetic Algorithm Hyperparameters ---")
+        print(f"Population Size      : {result['ga_metrics']['population_size']}")
+        print(f"Mutation Rate        : {result['ga_metrics']['mutation_rate']:.2f}")
+
+    # Untuk Simulated Annealing
+    if 'sa_metrics' in result:
+        print()
+        print(f"--- Simulated Annealing Hyperparameters ---")
+        print(f"Initial Temperature  : {result['sa_metrics']['initial_temperature']}")
+        print(f"Cooling Rate         : {result['sa_metrics']['cooling_rate']}")
     
     # Simulated Annealing (nambahin print stuck count + accepted worse)
     if isinstance(algorithm, SimulatedAnnealing) and output_dir:
@@ -119,6 +131,7 @@ def run_single_algorithm(algo_class, initial_state, obj_func, output_dir=None, p
         algo_name_safe = result['algorithm'].replace(' ', '_').replace('(', '').replace(')', '').replace('=', '').replace(',', '').replace('.', '')
         
         print(f"\n📈 Generating plots...")
+        # Untuk Genetic Algorithm
         
         # 1. Plot objective history
         obj_plot_path = os.path.join(plot_dir, f"{algo_name_safe}_objective.png")
@@ -179,7 +192,7 @@ def run_single_experiment(algorithm_code: str, initial_state: State, obj_func: O
         algo_name = "Simulated Annealing"
         algo_class = SimulatedAnnealing
         kwargs = {
-            "max_iterations": 20000,
+            "max_iterations": 10000,
             "initial_temp": 1000,
             "cooling_rate": 0.99
         }
@@ -192,7 +205,7 @@ def run_single_experiment(algorithm_code: str, initial_state: State, obj_func: O
             "capacity": capacity,
             "mutation_probability": 0.5,
             "population_size": 50,
-            "max_iterations": 1000
+            "max_iterations": 10000
         }
     
     # Run algorithm
