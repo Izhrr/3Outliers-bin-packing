@@ -1,3 +1,4 @@
+<img width="252" height="200" alt="image" src="https://github.com/user-attachments/assets/c3cb49a3-3c14-44ec-9202-355857b5affa" />
 # 3Outliers Bin Packing
 
 ## Deskripsi
@@ -70,5 +71,3 @@ Input berupa file JSON dengan format:
 ## Lisensi
 MIT License
 
-## Kredit
-Proyek ini dikembangkan oleh tim 3Outliers untuk studi dan eksperimen algoritma optimasi pada Bin Packing Problem.
