@@ -284,7 +284,6 @@ class SimulatedAnnealing(BaseLocalSearchAlgorithm):
             )):
                 writer.writerow([i+1, prob, temp, obj])
         
-        print(f"✓ Saved acceptance probabilities to: {csv_path}")
         
         # Save summary ke JSON
         json_path = os.path.join(output_dir, 'sa_summary.json')
@@ -312,5 +311,3 @@ class SimulatedAnnealing(BaseLocalSearchAlgorithm):
         
         with open(json_path, 'w') as f:
             json.dump(summary, f, indent=2)
-        
-        print(f"✓ Saved summary to: {json_path}")

@@ -12,6 +12,7 @@ import random
 import time
 from typing import Optional
 from .base_algorithm import HillClimbingBase
+from core.initializer import BinPackingInitializer
 
 class SteepestAscentHillClimbing(HillClimbingBase):
     """
@@ -99,7 +100,6 @@ class SteepestAscentHillClimbing(HillClimbingBase):
             verbose: Jika True, tampilkan initial/final state ASCII
         """
         if verbose:
-            # Import di sini untuk avoid circular import
             from utils.visualizer import ResultVisualizer
             
             print("\n" + "="*80)
@@ -494,10 +494,7 @@ class RandomRestartHillClimbing(HillClimbingBase):
         """
         super().__init__(initial_state, objective_function, base_max_iterations)
         
-        self.items = {}
-        for container in initial_state.containers:
-            for item_id, size in container.items.items():
-                self.items[item_id] = size
+        self.items = initial_state.items.copy()
         self.capacity = initial_state.capacity
         
         # Parameters
@@ -523,7 +520,6 @@ class RandomRestartHillClimbing(HillClimbingBase):
         
         Args:
             state: Initial state untuk run ini
-            
         Returns:
             Instance of base HC algorithm
         """
@@ -533,7 +529,6 @@ class RandomRestartHillClimbing(HillClimbingBase):
                 self.objective_function,
                 max_iterations=self.base_max_iterations
             )
-        
         elif self.base_algorithm == "stochastic":
             return StochasticHillClimbing(
                 state,
@@ -541,7 +536,6 @@ class RandomRestartHillClimbing(HillClimbingBase):
                 max_iterations=self.base_max_iterations,
                 seed=self.seed
             )
-        
         elif self.base_algorithm == "sideways":
             return SidewaysMoveHillClimbing(
                 state,
@@ -549,7 +543,6 @@ class RandomRestartHillClimbing(HillClimbingBase):
                 max_iterations=self.base_max_iterations,
                 max_sideways_moves=self.base_max_sideways
             )
-        
         else:
             raise ValueError(f"Unknown base algorithm: {self.base_algorithm}")
     
@@ -560,7 +553,6 @@ class RandomRestartHillClimbing(HillClimbingBase):
         Returns:
             New random initial state
         """
-        from src.core.initializer import BinPackingInitializer
         
         # Shuffle items
         item_list = list(self.items.items())

@@ -1,5 +1,5 @@
 """
-visualizer.py - Modul untuk visualisasi hasil algoritma INDIVIDUAL
+Modul untuk visualisasi hasil algoritma INDIVIDUAL
 
 Menyediakan fungsi visualisasi untuk SATU algoritma per eksekusi:
 1. Plot objective function vs iterations (semua algoritma)
@@ -7,8 +7,8 @@ Menyediakan fungsi visualisasi untuk SATU algoritma per eksekusi:
 3. Algorithm-specific plots:
    - SA: acceptance probability, temperature cooling
    - GA: progression (best & avg fitness)
+   - HC
 
-TIDAK ADA comparison plots - setiap algoritma dijalankan terpisah.
 """
 
 import matplotlib.pyplot as plt
@@ -360,43 +360,7 @@ class ResultVisualizer:
         plt.show()
         return fig
 
-# Demo
-def demo_visualizer():
-    """Demo penggunaan visualizer"""
-    from core.state import State
-    from core.objective_function import ObjectiveFunction
-    from core.initializer import BinPackingInitializer
-    
-    # Setup
-    items = {
-        "BRG001": 40, "BRG002": 55, "BRG003": 25,
-        "BRG004": 60, "BRG005": 30, "BRG006": 45, "BRG007": 50
-    }
-    capacity = 100
-    
-    initial_state = BinPackingInitializer.best_fit(items, capacity)
-    
-    print("Demo Visualizer")
-    print("=" * 70)
-    
-    # 1. ASCII visualization
-    ResultVisualizer.visualize_containers_ascii(initial_state, "Initial State")
-    
-    # 2. State comparison (simulasi)
-    final_state = initial_state.copy()
-    # Simulasi improvement
-    if len(final_state.containers) > 2:
-        # Gabungkan 2 kontainer terakhir jika muat
-        last_container = final_state.containers[-1]
-        second_last = final_state.containers[-2]
-        
-        total_size = sum(final_state.items[item] for item in last_container + second_last)
-        if total_size <= capacity:
-            final_state.containers[-2].extend(last_container)
-            final_state.containers.pop()
-    
-    ResultVisualizer.print_state_comparison(initial_state, final_state, "Demo Algorithm")
 
 
 if __name__ == "__main__":
-    demo_visualizer()
+    pass

@@ -126,11 +126,17 @@ def run_single_algorithm(algo_class, initial_state, obj_func, output_dir=None, p
     
     # Simulated Annealing (nambahin print stuck count + accepted worse)
     if isinstance(algorithm, SimulatedAnnealing) and output_dir:
-        print(f"\n📊 Saving SA-specific metrics...")
         algorithm.save_sa_metrics(output_dir)
         print(f"\n--- Simulated Annealing Additional Performance ---")
         print(f"  Stuck count: {algorithm.stuck_count}")
         print(f"  Accepted worse: {algorithm.accepted_worse_count}")
+
+    # Show improvement untuk Random Restart
+    if isinstance(algo_class, type) and issubclass(algo_class, RandomRestartHillClimbing):
+        stats = result.get('statistics', {})
+        if 'total_restarts_executed' in stats:
+            print(f"   Total restarts: {stats['total_restarts_executed']}")
+            print(f"   Average iterations per run: {stats.get('average_iterations_per_run', 0):.2f}")
     
     # Generate plots jika plot_dir disediakan
     if plot_dir:
@@ -247,8 +253,6 @@ def run_single_experiment(algorithm_code: str, initial_state: State, obj_func: O
             "max_iterations": 10000
         }
     
-    # Run algorithm
-    print(f"\n{'='*70}\nRunning: {algo_name}\n{'='*70}")
     
     # Setup directories
     algo_output_dir = None
@@ -269,24 +273,14 @@ def run_single_experiment(algorithm_code: str, initial_state: State, obj_func: O
     # Visualize final state
     final_state = result.get('_final_state_object', None)
     if final_state:
-        print(f"\n📦 Final State Detail:")
+        print(f"\nFinal State Detail:")
         print(f"Jumlah kontainer akhir: {final_state.num_containers()}")
         
-        # Show improvement untuk Random Restart
-        if isinstance(algo_class, type) and issubclass(algo_class, RandomRestartHillClimbing):
-            stats = result.get('statistics', {})
-            if 'total_restarts_executed' in stats:
-                print(f"   Total restarts: {stats['total_restarts_executed']}")
-                print(f"   Average iterations per run: {stats.get('average_iterations_per_run', 0):.2f}")
-        
-        # Visualisasi HANYA SEKALI
+        # Visualisasi
         ResultVisualizer.visualize_containers_ascii(
             final_state,
             f"Final State - {algo_name}"
         )
-    
-    print('-'*70)
-    print('-'*70)
     
     # Save result
     print(f"\nSaving results...")

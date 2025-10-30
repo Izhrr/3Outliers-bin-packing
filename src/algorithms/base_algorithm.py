@@ -116,10 +116,6 @@ class BaseLocalSearchAlgorithm(ABC):
         print(f"Kontainer Awal    : {stats['num_containers_initial']}")
         print(f"Kontainer Akhir   : {stats['num_containers_final']}")
         print(f"Pengurangan       : {stats['num_containers_initial'] - stats['num_containers_final']} kontainer")
-        
-        if verbose:
-            print(f"\n--- State Akhir ---")
-            print(self.best_state)
     
     def get_result_dict(self) -> dict:
         """
