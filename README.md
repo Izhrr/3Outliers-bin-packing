@@ -1,10 +1,8 @@
+# 3Outliers Bin Packing
+
 <div align="center">
   <img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/c39265b1-a855-476a-a195-9396ae330b89" />
 </div>
-
-
-
-# 3Outliers Bin Packing
 
 ## Deskripsi
 **3Outliers Bin Packing** adalah proyek Python yang mengimplementasikan berbagai algoritma _local search_ dan _metaheuristics_ untuk menyelesaikan masalah **Bin Packing Problem** (BPP). Proyek ini mendemonstrasikan dan membandingkan efektivitas beberapa algoritma pencarian seperti Hill Climbing (dengan berbagai varian), Genetic Algorithm, dan Simulated Annealing pada kasus pengemasan barang ke dalam container dengan kapasitas terbatas.
