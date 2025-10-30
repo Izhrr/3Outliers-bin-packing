@@ -231,7 +231,62 @@ class StochasticHillClimbing(HillClimbingBase):
         stats['stuck_at_iteration'] = self.stuck_iteration
         stats['seed'] = self.seed
         return stats
-
+    
+    def print_results(self, verbose: bool = True):
+        if verbose:
+            from src.utils.visualizer import ResultVisualizer
+            
+            print("\n" + "="*80)
+            print(f"RESULTS - {self.get_name()}")
+            print("="*80)
+            
+            # ===== STATE AWAL =====
+            print("\n" + "─"*80)
+            print(">>> INITIAL STATE")
+            print("─"*80)
+            ResultVisualizer.visualize_containers_ascii(self.initial_state, "Initial State")
+            initial_value = self.history[0] if self.history else self.evaluate_state(self.initial_state)
+            print(f"\n➤ Initial Objective: {initial_value:.2f}")
+            print(f"➤ Initial Containers: {self.initial_state.num_containers()}")
+            
+            # ===== STATE AKHIR =====
+            print("\n" + "─"*80)
+            print(">>> FINAL STATE")
+            print("─"*80)
+            ResultVisualizer.visualize_containers_ascii(self.best_state, "Final State")
+            print(f"\n➤ Final Objective: {self.best_value:.2f}")
+            print(f"➤ Final Containers: {self.best_state.num_containers()}")
+            print(f"➤ Valid Solution: {'YES' if self.best_state.is_valid() else 'NO'}")
+            
+            # ===== IMPROVEMENT =====
+            print("\n" + "─"*80)
+            print(">>> IMPROVEMENT")
+            print("─"*80)
+            obj_improvement = initial_value - self.best_value
+            container_reduction = self.initial_state.num_containers() - self.best_state.num_containers()
+            improvement_pct = (obj_improvement / initial_value * 100) if initial_value > 0 else 0
+            
+            print(f"Objective Improvement: {obj_improvement:.2f} ({improvement_pct:.2f}%)")
+            print(f"Container Reduction: {container_reduction} containers")
+        
+        # ===== STATISTICS =====
+        print("\n" + "─"*80)
+        print(">>> STATISTICS")
+        print("─"*80)
+        print(f"➤ Algorithm: {self.get_name()}")
+        print(f"➤ Duration: {self.duration:.4f} seconds")
+        print(f"➤ Total Iterations: {len(self.history)}")
+        print(f"➤ Best Objective: {self.best_value:.2f}")
+        
+        # Stuck info
+        if self.stuck_iteration is not None:
+            print(f"➤ Stuck at Iteration: {self.stuck_iteration}")
+        
+        # Seed info
+        print(f"➤ Random Seed: {self.seed if self.seed is not None else 'None (truly random)'}")
+        
+        if verbose:
+            print("\n" + "="*80)
 
 class SidewaysMoveHillClimbing(HillClimbingBase):
     """
