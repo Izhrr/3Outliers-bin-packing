@@ -1,0 +1,9 @@
+# Core dependencies
+numpy
+tabulate
+
+# (Optional) For plotting or more advanced visualization, uncomment below:
+# matplotlib
+
+# (Optional) For progress bar, uncomment below:
+# tqdm
